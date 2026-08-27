@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: agency-crm
+    runtime: python
+    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate"
+    startCommand: "gunicorn agency_crm.wsgi --log-file -"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true        # Render auto-generates a secure key
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: agency-crm-db
+          property: connectionString
+    autoDeploy: true               # Redeploys automatically on every git push
+
+databases:
+  - name: agency-crm-db
+    databaseName: agency_crm
+    plan: free
