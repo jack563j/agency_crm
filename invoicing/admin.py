@@ -1,10 +1,12 @@
 """
 Django admin configuration for the invoicing app.
 
-- Invoice: full detail with InvoiceLineItem + Payment inlines
+- Invoice: full detail with InvoiceLineItem + Payment inlines & 1-click Print/PDF link
 - Payment: standalone list (also accessible via Invoice inline)
 """
 from django.contrib import admin
+from django.urls import reverse
+from django.utils.html import format_html
 
 from .models import Invoice, InvoiceLineItem, Payment
 
@@ -39,7 +41,7 @@ class PaymentInline(admin.TabularInline):
 class InvoiceAdmin(admin.ModelAdmin):
     list_display   = (
         "invoice_number", "status", "company", "contact",
-        "issue_date", "due_date", "balance_due_display", "assigned_to",
+        "issue_date", "due_date", "balance_due_display", "print_action", "assigned_to",
     )
     list_filter    = ("status", "assigned_to", "due_date")
     search_fields  = ("invoice_number", "company__name", "contact__first_name", "contact__last_name")
@@ -83,6 +85,14 @@ class InvoiceAdmin(admin.ModelAdmin):
     def balance_due_display(self, obj: Invoice) -> str:
         balance = obj.balance_due
         return f"{balance:,.2f}"
+
+    @admin.display(description="PDF / Print")
+    def print_action(self, obj: Invoice) -> str:
+        url = reverse("invoice_detail", args=[obj.pk])
+        return format_html(
+            '<a class="button" href="{}" target="_blank" style="padding: 3px 8px; background: #2563eb; color: white; border-radius: 4px; text-decoration: none; font-size: 11px; font-weight: bold;">📄 View Invoice</a>',
+            url
+        )
 
 
 # ---------------------------------------------------------------------------

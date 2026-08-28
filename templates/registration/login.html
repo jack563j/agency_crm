@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Agency CRM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-slate-900 min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full bg-slate-950/80 border border-slate-800 rounded-2xl shadow-2xl p-8 backdrop-blur-xl">
+        <!-- Logo -->
+        <div class="text-center mb-8">
+            <div class="w-12 h-12 bg-teal-500 text-white rounded-xl flex items-center justify-center font-bold text-2xl mx-auto shadow-lg shadow-teal-500/20 mb-3">
+                <i class="fa-solid fa-layer-group"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-white tracking-wide">AgencyCRM</h1>
+            <p class="text-xs text-slate-400 mt-1">Sign in to access your business operations</p>
+        </div>
+
+        {% if form.errors %}
+            <div class="mb-6 p-3.5 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-300 text-xs font-medium flex items-center">
+                <i class="fa-solid fa-triangle-exclamation mr-2.5 text-rose-400"></i>
+                Invalid username or password. Please try again.
+            </div>
+        {% endif %}
+
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1.5" for="id_username">Username</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 text-sm">
+                        <i class="fa-solid fa-user"></i>
+                    </span>
+                    <input type="text" name="username" id="id_username" required autofocus
+                           class="w-full bg-slate-900 border border-slate-700 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 transition outline-none"
+                           placeholder="admin">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1.5" for="id_password">Password</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 text-sm">
+                        <i class="fa-solid fa-lock"></i>
+                    </span>
+                    <input type="password" name="password" id="id_password" required
+                           class="w-full bg-slate-900 border border-slate-700 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 transition outline-none"
+                           placeholder="••••••••">
+                </div>
+            </div>
+
+            <button type="submit" class="w-full mt-2 py-3 bg-teal-600 hover:bg-teal-500 text-white font-semibold text-sm rounded-xl shadow-lg shadow-teal-600/30 transition duration-150">
+                Sign In to CRM
+            </button>
+        </form>
+
+        <div class="mt-6 text-center">
+            <p class="text-xs text-slate-500">Need admin access? Go to <a href="/admin/" class="text-teal-400 hover:underline">Django Admin</a></p>
+        </div>
+    </div>
+
+</body>
+</html>

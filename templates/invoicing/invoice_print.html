@@ -1,0 +1,9 @@
+{% extends 'invoicing/invoice_detail.html' %}
+
+{% block content %}
+<script>
+    window.addEventListener('DOMContentLoaded', (event) => {
+        window.print();
+    });
+</script>
+{% endblock %}

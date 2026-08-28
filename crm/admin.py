@@ -85,25 +85,28 @@ class LeadAdmin(admin.ModelAdmin):
     list_filter    = ("status", "source", "assigned_to")
     search_fields  = ("title", "contact__first_name", "contact__last_name", "company__name")
     autocomplete_fields = ("contact", "company", "assigned_to")
-    date_hierarchy  = "created_at"
-    readonly_fields = ("created_at", "updated_at")
+    actions = ["convert_to_opportunity"]
 
-    fieldsets = (
-        (None, {
-            "fields": ("title", "status", "source"),
-        }),
-        ("Related records", {
-            "fields": ("contact", "company", "assigned_to"),
-        }),
-        ("Notes", {
-            "fields": ("notes",),
-            "classes": ("collapse",),
-        }),
-        ("Timestamps", {
-            "fields": ("created_at", "updated_at"),
-            "classes": ("collapse",),
-        }),
-    )
+    @admin.action(description="Convert selected Lead(s) to Opportunity")
+    def convert_to_opportunity(self, request, queryset):
+        converted_count = 0
+        from .models import LeadStatus, OpportunityStage
+        for lead in queryset:
+            if lead.status != LeadStatus.CONVERTED:
+                Opportunity.objects.create(
+                    title=f"Deal: {lead.title}",
+                    lead=lead,
+                    contact=lead.contact,
+                    company=lead.company,
+                    assigned_to=lead.assigned_to or request.user,
+                    stage=OpportunityStage.PROSPECTING,
+                    notes=lead.notes,
+                )
+                lead.status = LeadStatus.CONVERTED
+                lead.save(update_fields=["status", "updated_at"])
+                converted_count += 1
+        self.message_user(request, f"Successfully converted {converted_count} lead(s) into Opportunities.")
+
 
 
 # ---------------------------------------------------------------------------
