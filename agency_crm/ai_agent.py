@@ -421,8 +421,45 @@ def execute_tool(tool_name: str, args: dict, user) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Gemini Conversational Agent Caller
+# Gemini Conversational Agent Caller with Dynamic Model Resolution
 # ---------------------------------------------------------------------------
+
+_CACHED_MODEL_NAME = None
+
+
+def resolve_active_model(api_key: str) -> str:
+    """Queries Google AI Studio to detect which models are enabled for this API key."""
+    global _CACHED_MODEL_NAME
+    if _CACHED_MODEL_NAME:
+        return _CACHED_MODEL_NAME
+
+    try:
+        res = requests.get(f"https://generativelanguage.googleapis.com/v1beta/models?key={api_key}", timeout=8)
+        data = res.json()
+        models = data.get("models", [])
+
+        # Filter to models that support text generation
+        supported = [
+            m["name"].replace("models/", "")
+            for m in models
+            if "generateContent" in m.get("supportedGenerationMethods", [])
+        ]
+
+        # Preferred order: flash models first for speed & free tier
+        for pref in ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-flash-8b", "gemini-1.5-pro", "gemini-pro"]:
+            for cand in supported:
+                if pref in cand:
+                    _CACHED_MODEL_NAME = cand
+                    return _CACHED_MODEL_NAME
+
+        if supported:
+            _CACHED_MODEL_NAME = supported[0]
+            return _CACHED_MODEL_NAME
+    except Exception:
+        pass
+
+    return "gemini-1.5-flash"
+
 
 def run_ai_copilot(user_message: str, chat_history: list, user) -> tuple[str, list]:
     """
@@ -460,7 +497,8 @@ USER MANUAL & PRODUCT GUIDE:
 - Format responses nicely with markdown, bullet points, and bold highlights.
 """
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    active_model = resolve_active_model(api_key)
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{active_model}:generateContent?key={api_key}"
 
     # Build contents payload
     contents = []
@@ -491,7 +529,7 @@ USER MANUAL & PRODUCT GUIDE:
         res_data = res.json()
 
         if "error" in res_data:
-            return f"❌ Gemini API Error: {res_data['error'].get('message', 'Unknown error')}", chat_history
+            return f"❌ Gemini API Error ({active_model}): {res_data['error'].get('message', 'Unknown error')}", chat_history
 
         candidates = res_data.get("candidates", [])
         if not candidates:
@@ -518,3 +556,4 @@ USER MANUAL & PRODUCT GUIDE:
 
     except Exception as e:
         return f"⚠️ Connection error to AI service: {str(e)}", chat_history
+
