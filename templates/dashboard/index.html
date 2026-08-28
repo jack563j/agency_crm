@@ -113,15 +113,15 @@
                 <h4 class="font-bold text-slate-800 text-sm flex items-center">
                     <i class="fa-solid fa-bullseye text-amber-500 mr-2"></i> Recent Inbound Leads
                 </h4>
-                <a href="/admin/crm/lead/" class="text-xs text-teal-600 font-semibold hover:underline">View All &rarr;</a>
+                <a href="{% url 'lead_list' %}" class="text-xs text-teal-600 font-semibold hover:underline">View All &rarr;</a>
             </div>
             <div class="divide-y divide-slate-100 flex-1">
                 {% for lead in recent_leads %}
                 <div class="p-4 flex items-center justify-between hover:bg-slate-50 transition">
                     <div>
-                        <a href="/admin/crm/lead/{{ lead.id }}/change/" class="font-semibold text-sm text-slate-900 hover:text-teal-600 block">
+                        <p class="font-semibold text-sm text-slate-900">
                             {{ lead.title }}
-                        </a>
+                        </p>
                         <p class="text-xs text-slate-500 mt-0.5">
                             {% if lead.company %}{{ lead.company.name }}{% endif %}
                             {% if lead.contact %} • {{ lead.contact.full_name }}{% endif %}
@@ -134,14 +134,16 @@
                             {% else %}bg-slate-100 text-slate-700{% endif %}">
                             {{ lead.get_status_display }}
                         </span>
-                        <a href="/admin/crm/lead/{{ lead.id }}/change/" class="text-xs px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md font-medium">
-                            Edit
+                        {% if lead.status != 'converted' %}
+                        <a href="{% url 'lead_convert' lead.id %}" class="text-xs px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-md font-semibold transition">
+                            Convert
                         </a>
+                        {% endif %}
                     </div>
                 </div>
                 {% empty %}
                 <div class="p-8 text-center text-slate-400 text-sm">
-                    No leads created yet. <a href="/admin/crm/lead/add/" class="text-teal-600 font-medium hover:underline">Add your first lead</a>
+                    No leads created yet. <a href="{% url 'lead_create' %}" class="text-teal-600 font-medium hover:underline">Add your first lead</a>
                 </div>
                 {% endfor %}
             </div>
@@ -153,7 +155,7 @@
                 <h4 class="font-bold text-slate-800 text-sm flex items-center">
                     <i class="fa-solid fa-receipt text-rose-500 mr-2"></i> Recent Invoices & Billing
                 </h4>
-                <a href="/admin/invoicing/invoice/" class="text-xs text-teal-600 font-semibold hover:underline">View All &rarr;</a>
+                <a href="{% url 'invoice_list' %}" class="text-xs text-teal-600 font-semibold hover:underline">View All &rarr;</a>
             </div>
             <div class="divide-y divide-slate-100 flex-1">
                 {% for inv in recent_invoices %}
@@ -184,7 +186,7 @@
                 </div>
                 {% empty %}
                 <div class="p-8 text-center text-slate-400 text-sm">
-                    No invoices created yet. Convert an order or <a href="/admin/invoicing/invoice/add/" class="text-teal-600 font-medium hover:underline">create an invoice</a>
+                    No invoices created yet. Convert an order or <a href="{% url 'invoice_create' %}" class="text-teal-600 font-medium hover:underline">create an invoice</a>
                 </div>
                 {% endfor %}
             </div>

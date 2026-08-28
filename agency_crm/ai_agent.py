@@ -462,85 +462,95 @@ USER MANUAL & PRODUCT GUIDE:
 - Format responses nicely with markdown, bullet points, and bold highlights.
 """
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
+    # Model endpoints with fallback
+    models_to_try = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash-exp"]
 
-    # Build contents payload
-    contents = []
-    for msg in chat_history[-8:]:  # keep last 8 turns
+    for model_name in models_to_try:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
+
+        # Build contents payload
+        contents = []
+        for msg in chat_history[-8:]:  # keep last 8 turns
+            contents.append({
+                "role": "user" if msg["role"] == "user" else "model",
+                "parts": [{"text": msg["content"]}]
+            })
         contents.append({
-            "role": "user" if msg["role"] == "user" else "model",
-            "parts": [{"text": msg["content"]}]
+            "role": "user",
+            "parts": [{"text": user_message}]
         })
-    contents.append({
-        "role": "user",
-        "parts": [{"text": user_message}]
-    })
 
-    payload = {
-        "system_instruction": {
-            "parts": [{"text": system_instruction}]
-        },
-        "contents": contents,
-        "tools": [{"function_declarations": TOOLS_DEFINITION}],
-        "generationConfig": {
-            "temperature": 0.3,
-            "maxOutputTokens": 1000
+        payload = {
+            "system_instruction": {
+                "parts": [{"text": system_instruction}]
+            },
+            "contents": contents,
+            "tools": [{"function_declarations": TOOLS_DEFINITION}],
+            "generationConfig": {
+                "temperature": 0.3,
+                "maxOutputTokens": 1000
+            }
         }
-    }
 
-    try:
-        res = requests.post(url, json=payload, timeout=20)
-        res_data = res.json()
+        try:
+            res = requests.post(url, json=payload, timeout=20)
+            res_data = res.json()
 
-        if "error" in res_data:
-            return f"❌ AI Error: {res_data['error'].get('message', 'Unknown error')}", chat_history
+            if "error" in res_data:
+                error_msg = res_data['error'].get('message', '')
+                if "not found" in error_msg.lower() or "no longer available" in error_msg.lower():
+                    continue  # try next fallback model
+                return f"❌ AI Error: {error_msg}", chat_history
 
-        candidate = res_data.get("candidates", [{}])[0]
-        content_obj = candidate.get("content", {})
-        parts = content_obj.get("parts", [])
+            candidate = res_data.get("candidates", [{}])[0]
+            content_obj = candidate.get("content", {})
+            parts = content_obj.get("parts", [])
 
-        # Check for function calls
-        for part in parts:
-            if "functionCall" in part:
-                func_call = part["functionCall"]
-                fn_name = func_call["name"]
-                fn_args = func_call.get("args", {})
+            # Check for function calls
+            for part in parts:
+                if "functionCall" in part:
+                    func_call = part["functionCall"]
+                    fn_name = func_call["name"]
+                    fn_args = func_call.get("args", {})
 
-                # Execute tool
-                tool_result = execute_tool(fn_name, fn_args, user)
+                    # Execute tool
+                    tool_result = execute_tool(fn_name, fn_args, user)
 
-                # Send tool response back to Gemini for final conversational summary
-                follow_up_contents = list(contents)
-                follow_up_contents.append({
-                    "role": "model",
-                    "parts": [{"functionCall": func_call}]
-                })
-                follow_up_contents.append({
-                    "role": "user",
-                    "parts": [{
-                        "functionResponse": {
-                            "name": fn_name,
-                            "response": {"result": tool_result}
-                        }
-                    }]
-                })
+                    # Send tool response back to Gemini for final conversational summary
+                    follow_up_contents = list(contents)
+                    follow_up_contents.append({
+                        "role": "model",
+                        "parts": [{"functionCall": func_call}]
+                    })
+                    follow_up_contents.append({
+                        "role": "user",
+                        "parts": [{
+                            "functionResponse": {
+                                "name": fn_name,
+                                "response": {"result": tool_result}
+                            }
+                        }]
+                    })
 
-                follow_up_payload = {
-                    "system_instruction": {"parts": [{"text": system_instruction}]},
-                    "contents": follow_up_contents
-                }
-                follow_res = requests.post(url, json=follow_up_payload, timeout=20).json()
-                final_text = follow_res.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
-                
-                if not final_text:
-                    final_text = tool_result.get("message", "Action completed successfully.")
+                    follow_up_payload = {
+                        "system_instruction": {"parts": [{"text": system_instruction}]},
+                        "contents": follow_up_contents
+                    }
+                    follow_res = requests.post(url, json=follow_up_payload, timeout=20).json()
+                    final_text = follow_res.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                    
+                    if not final_text:
+                        final_text = tool_result.get("message", "Action completed successfully.")
 
-                return final_text, chat_history
+                    return final_text, chat_history
 
-            elif "text" in part:
-                return part["text"], chat_history
+                elif "text" in part:
+                    return part["text"], chat_history
 
-        return "I processed your request, but have no output to display.", chat_history
+            return "I processed your request, but have no output to display.", chat_history
 
-    except Exception as e:
-        return f"⚠️ Connection error to AI service: {str(e)}", chat_history
+        except Exception as e:
+            continue
+
+    return "⚠️ Could not connect to Gemini API. Please ensure your API key has access to standard Gemini flash models.", chat_history
+
