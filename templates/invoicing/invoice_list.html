@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Invoices & Billing | Agency CRM{% endblock %}
+{% block header_title %}Billing & Client Invoices{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header Actions & Filters -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <!-- Status Filter Chips -->
+        <div class="flex items-center space-x-2 overflow-x-auto text-xs">
+            <a href="{% url 'invoice_list' %}" class="px-3 py-1.5 rounded-lg font-semibold transition {% if not current_status %}bg-teal-600 text-white shadow-sm{% else %}bg-white border border-slate-200 text-slate-600 hover:bg-slate-50{% endif %}">
+                All Invoices
+            </a>
+            {% for s_val, s_label in statuses %}
+            <a href="{% url 'invoice_list' %}?status={{ s_val }}" class="px-3 py-1.5 rounded-lg font-semibold transition {% if current_status == s_val %}bg-teal-600 text-white shadow-sm{% else %}bg-white border border-slate-200 text-slate-600 hover:bg-slate-50{% endif %}">
+                {{ s_label }}
+            </a>
+            {% endfor %}
+        </div>
+
+        <!-- Add Invoice Button -->
+        <a href="{% url 'invoice_create' %}" class="inline-flex items-center px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold rounded-xl shadow-md shadow-teal-600/20 transition shrink-0">
+            <i class="fa-solid fa-plus mr-1.5"></i> New Invoice
+        </a>
+    </div>
+
+    <!-- Invoices Table -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="bg-slate-50/80 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-100">
+                        <th class="py-3.5 px-6">Invoice #</th>
+                        <th class="py-3.5 px-6">Company</th>
+                        <th class="py-3.5 px-6">Status</th>
+                        <th class="py-3.5 px-6">Subtotal</th>
+                        <th class="py-3.5 px-6">Paid</th>
+                        <th class="py-3.5 px-6">Balance Due</th>
+                        <th class="py-3.5 px-6">Due Date</th>
+                        <th class="py-3.5 px-6 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700">
+                    {% for inv in invoices %}
+                    <tr class="hover:bg-slate-50/80 transition">
+                        <td class="py-4 px-6 font-mono font-bold text-slate-900">INV-{{ inv.invoice_number }}</td>
+                        <td class="py-4 px-6 font-medium">{% if inv.company %}{{ inv.company.name }}{% else %}—{% endif %}</td>
+                        <td class="py-4 px-6">
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold 
+                                {% if inv.status == 'paid' %}bg-emerald-100 text-emerald-800
+                                {% elif inv.is_overdue %}bg-rose-100 text-rose-800
+                                {% elif inv.status == 'sent' %}bg-blue-100 text-blue-800
+                                {% else %}bg-slate-100 text-slate-700{% endif %}">
+                                {{ inv.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="py-4 px-6 font-bold text-slate-900">${{ inv.subtotal|floatformat:2 }}</td>
+                        <td class="py-4 px-6 font-semibold text-emerald-600">${{ inv.amount_paid|floatformat:2 }}</td>
+                        <td class="py-4 px-6 font-bold text-rose-600">${{ inv.balance_due|floatformat:2 }}</td>
+                        <td class="py-4 px-6 font-medium text-slate-500">{{ inv.due_date|default:"Due on receipt" }}</td>
+                        <td class="py-4 px-6 text-right space-x-2">
+                            <a href="{% url 'invoice_detail' inv.id %}" target="_blank" class="px-2.5 py-1 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-semibold shadow-sm transition">
+                                <i class="fa-solid fa-file-pdf mr-1"></i> View / PDF
+                            </a>
+                            <a href="/admin/invoicing/invoice/{{ inv.id }}/change/" class="text-slate-400 hover:text-slate-700 text-xs p-1">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="py-12 text-center text-slate-400">
+                            <i class="fa-solid fa-receipt text-3xl mb-2 block text-slate-300"></i>
+                            No invoices generated yet.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

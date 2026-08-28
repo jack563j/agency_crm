@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Deals & Pipeline | Agency CRM{% endblock %}
+{% block header_title %}Sales Opportunities & Pipeline{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header Actions & Filters -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <!-- Stage Filter Chips -->
+        <div class="flex items-center space-x-2 overflow-x-auto text-xs">
+            <a href="{% url 'opportunity_list' %}" class="px-3 py-1.5 rounded-lg font-semibold transition {% if not current_stage %}bg-teal-600 text-white shadow-sm{% else %}bg-white border border-slate-200 text-slate-600 hover:bg-slate-50{% endif %}">
+                All Stages
+            </a>
+            {% for s_val, s_label in stages %}
+            <a href="{% url 'opportunity_list' %}?stage={{ s_val }}" class="px-3 py-1.5 rounded-lg font-semibold transition {% if current_stage == s_val %}bg-teal-600 text-white shadow-sm{% else %}bg-white border border-slate-200 text-slate-600 hover:bg-slate-50{% endif %}">
+                {{ s_label }}
+            </a>
+            {% endfor %}
+        </div>
+
+        <!-- Add Deal Button -->
+        <a href="{% url 'opportunity_create' %}" class="inline-flex items-center px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold rounded-xl shadow-md shadow-teal-600/20 transition shrink-0">
+            <i class="fa-solid fa-plus mr-1.5"></i> New Deal
+        </a>
+    </div>
+
+    <!-- Deals Table -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="bg-slate-50/80 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-100">
+                        <th class="py-3.5 px-6">Deal Title</th>
+                        <th class="py-3.5 px-6">Company</th>
+                        <th class="py-3.5 px-6">Deal Stage</th>
+                        <th class="py-3.5 px-6">Value ($)</th>
+                        <th class="py-3.5 px-6">Win Probability</th>
+                        <th class="py-3.5 px-6">Expected Close</th>
+                        <th class="py-3.5 px-6">Assignee</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700">
+                    {% for opp in opportunities %}
+                    <tr class="hover:bg-slate-50/80 transition">
+                        <td class="py-4 px-6 font-bold text-slate-900">{{ opp.title }}</td>
+                        <td class="py-4 px-6 font-medium">{% if opp.company %}{{ opp.company.name }}{% else %}—{% endif %}</td>
+                        <td class="py-4 px-6">
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold 
+                                {% if opp.stage == 'closed_won' %}bg-emerald-100 text-emerald-800
+                                {% elif opp.stage == 'closed_lost' %}bg-rose-100 text-rose-800
+                                {% elif opp.stage == 'proposal' %}bg-purple-100 text-purple-800
+                                {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                {{ opp.get_stage_display }}
+                            </span>
+                        </td>
+                        <td class="py-4 px-6 font-bold text-slate-900">${{ opp.value|floatformat:2 }}</td>
+                        <td class="py-4 px-6">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-16 bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                                    <div class="bg-teal-500 h-1.5 rounded-full" style="width: {{ opp.probability }}%"></div>
+                                </div>
+                                <span class="font-semibold text-[11px] text-slate-600">{{ opp.probability }}%</span>
+                            </div>
+                        </td>
+                        <td class="py-4 px-6 font-medium text-slate-500">{{ opp.expected_close_date|default:"Not specified" }}</td>
+                        <td class="py-4 px-6 font-medium text-slate-600">{{ opp.assigned_to.username|default:"Unassigned" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="py-12 text-center text-slate-400">
+                            <i class="fa-solid fa-briefcase text-3xl mb-2 block text-slate-300"></i>
+                            No deals found. Convert a lead or click <b>New Deal</b>!
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

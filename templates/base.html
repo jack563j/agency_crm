@@ -40,7 +40,7 @@
     <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0">
         <!-- Brand Header -->
         <div class="h-16 flex items-center px-6 bg-slate-950/40 border-b border-slate-800">
-            <div class="flex items-center space-x-3">
+            <a href="{% url 'dashboard' %}" class="flex items-center space-x-3">
                 <div class="w-9 h-9 bg-teal-500 text-white rounded-lg flex items-center justify-center font-bold text-lg shadow-md shadow-teal-500/20">
                     <i class="fa-solid fa-layer-group"></i>
                 </div>
@@ -48,43 +48,52 @@
                     <h1 class="text-white font-bold text-base leading-tight tracking-wide">AgencyCRM</h1>
                     <span class="text-xs text-slate-400 font-medium">Enterprise Suite</span>
                 </div>
-            </div>
+            </a>
         </div>
 
         <!-- Navigation Links -->
         <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
             <div class="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Core</div>
-            <a href="{% url 'dashboard' %}" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg bg-teal-600/20 text-teal-300 border border-teal-500/30 transition">
+            <a href="{% url 'dashboard' %}" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">
                 <i class="fa-solid fa-chart-pie w-5 text-teal-400 mr-2.5"></i> Dashboard
             </a>
 
-            <div class="pt-5 px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Apps & Records</div>
-            <a href="/admin/crm/lead/" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">
+            <div class="pt-5 px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">CRM & Pipeline</div>
+            <a href="{% url 'lead_list' %}" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">
                 <i class="fa-solid fa-bullseye w-5 text-amber-400 mr-2.5"></i> Leads
             </a>
-            <a href="/admin/crm/opportunity/" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">
+            <a href="{% url 'opportunity_list' %}" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">
                 <i class="fa-solid fa-briefcase w-5 text-emerald-400 mr-2.5"></i> Opportunities
             </a>
-            <a href="/admin/crm/company/" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">
+            <a href="{% url 'company_list' %}" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">
                 <i class="fa-solid fa-building w-5 text-blue-400 mr-2.5"></i> Companies
             </a>
-            <a href="/admin/crm/contact/" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">
+            <a href="{% url 'contact_list' %}" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">
                 <i class="fa-solid fa-address-book w-5 text-indigo-400 mr-2.5"></i> Contacts
             </a>
 
             <div class="pt-5 px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Sales & Billing</div>
-            <a href="/admin/sales/quote/" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">
+            <a href="{% url 'quote_list' %}" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">
                 <i class="fa-solid fa-file-invoice w-5 text-purple-400 mr-2.5"></i> Quotes
             </a>
-            <a href="/admin/sales/salesorder/" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">
+            <a href="{% url 'order_list' %}" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">
                 <i class="fa-solid fa-cart-shopping w-5 text-cyan-400 mr-2.5"></i> Orders
             </a>
-            <a href="/admin/invoicing/invoice/" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">
+            {% if not request.user.groups.first.name == 'Sales Representative' %}
+            <a href="{% url 'invoice_list' %}" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">
                 <i class="fa-solid fa-receipt w-5 text-rose-400 mr-2.5"></i> Invoices
             </a>
-            <a href="/admin/sales/product/" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">
+            {% endif %}
+            <a href="{% url 'product_list' %}" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">
                 <i class="fa-solid fa-box-open w-5 text-slate-400 mr-2.5"></i> Products
             </a>
+
+            {% if request.user.is_superuser or request.user.is_staff or request.user.groups.first.name == 'Admin' %}
+            <div class="pt-5 px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Administration</div>
+            <a href="{% url 'team_management' %}" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <i class="fa-solid fa-users-gear w-5 text-teal-400 mr-2.5"></i> Team & Roles
+            </a>
+            {% endif %}
         </nav>
 
         <!-- Sidebar Footer -->
@@ -95,12 +104,15 @@
                 </div>
                 <div class="truncate">
                     <p class="text-xs font-semibold text-white truncate">{{ request.user.username }}</p>
-                    <p class="text-[10px] text-slate-400">Administrator</p>
+                    <p class="text-[10px] text-teal-400">{{ request.user.groups.first.name|default:"Administrator" }}</p>
                 </div>
             </div>
-            <a href="{% url 'logout' %}" title="Logout" class="text-slate-400 hover:text-rose-400 transition text-sm p-1.5 rounded hover:bg-slate-800">
-                <i class="fa-solid fa-arrow-right-from-bracket"></i>
-            </a>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" title="Logout" class="text-slate-400 hover:text-rose-400 transition text-sm p-1.5 rounded hover:bg-slate-800">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                </button>
+            </form>
         </div>
     </aside>
 
@@ -112,17 +124,37 @@
                 <h2 class="text-lg font-bold text-slate-800">{% block header_title %}Overview Dashboard{% endblock %}</h2>
             </div>
             <div class="flex items-center space-x-3">
+                {% if request.user.is_superuser or request.user.is_staff %}
                 <a href="/admin/" target="_blank" class="inline-flex items-center px-3.5 py-1.5 text-xs font-semibold rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition shadow-sm">
                     <i class="fa-solid fa-sliders mr-2 text-slate-500"></i> Django Admin
                 </a>
+                {% endif %}
             </div>
         </header>
+
+        <!-- Alert Messages (if any) -->
+        {% if messages %}
+        <div class="px-8 pt-6">
+            {% for message in messages %}
+            <div class="p-3.5 rounded-xl text-xs font-medium flex items-center justify-between shadow-sm mb-2
+                {% if message.tags == 'success' %}bg-emerald-50 text-emerald-800 border border-emerald-200
+                {% elif message.tags == 'error' %}bg-rose-50 text-rose-800 border border-rose-200
+                {% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
+                <span>{{ message }}</span>
+                <button onclick="this.parentElement.remove()" class="text-sm font-bold opacity-60 hover:opacity-100">&times;</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
 
         <!-- Page Content -->
         <main class="flex-1 p-8">
             {% block content %}{% endblock %}
         </main>
     </div>
+
+    <!-- Include Floating AI Copilot Widget -->
+    {% include 'components/ai_chat_widget.html' %}
 
 </body>
 </html>

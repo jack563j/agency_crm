@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}Quotes & Proposals | Agency CRM{% endblock %}
+{% block header_title %}Sales Proposals & Quotes{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header Actions -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h3 class="text-sm font-bold text-slate-800">All Client Quotes</h3>
+            <p class="text-xs text-slate-400">Generate proposals and convert to confirmed orders</p>
+        </div>
+        <a href="{% url 'quote_create' %}" class="inline-flex items-center px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold rounded-xl shadow-md shadow-teal-600/20 transition">
+            <i class="fa-solid fa-plus mr-1.5"></i> New Quote
+        </a>
+    </div>
+
+    <!-- Quotes Table -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="bg-slate-50/80 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-100">
+                        <th class="py-3.5 px-6">Quote Title</th>
+                        <th class="py-3.5 px-6">Company</th>
+                        <th class="py-3.5 px-6">Status</th>
+                        <th class="py-3.5 px-6">Total ($)</th>
+                        <th class="py-3.5 px-6">Valid Until</th>
+                        <th class="py-3.5 px-6 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700">
+                    {% for quote in quotes %}
+                    <tr class="hover:bg-slate-50/80 transition">
+                        <td class="py-4 px-6 font-bold text-slate-900">{{ quote.title }}</td>
+                        <td class="py-4 px-6 font-medium">{% if quote.company %}{{ quote.company.name }}{% else %}—{% endif %}</td>
+                        <td class="py-4 px-6">
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold 
+                                {% if quote.status == 'accepted' %}bg-emerald-100 text-emerald-800
+                                {% elif quote.status == 'rejected' %}bg-rose-100 text-rose-800
+                                {% elif quote.status == 'sent' %}bg-blue-100 text-blue-800
+                                {% else %}bg-slate-100 text-slate-700{% endif %}">
+                                {{ quote.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="py-4 px-6 font-bold text-slate-900">${{ quote.total|floatformat:2 }}</td>
+                        <td class="py-4 px-6 font-medium text-slate-500">{{ quote.valid_until|default:"No expiration" }}</td>
+                        <td class="py-4 px-6 text-right space-x-2">
+                            {% if quote.status != 'accepted' %}
+                            <a href="{% url 'quote_convert' quote.id %}" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-semibold transition">
+                                <i class="fa-solid fa-circle-check mr-1"></i> Accept & Create Order
+                            </a>
+                            {% endif %}
+                            <a href="/admin/sales/quote/{{ quote.id }}/change/" class="text-slate-400 hover:text-slate-700 text-xs p-1">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="py-12 text-center text-slate-400">
+                            <i class="fa-solid fa-file-invoice text-3xl mb-2 block text-slate-300"></i>
+                            No quotes created yet. Click <b>New Quote</b> to build one!
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

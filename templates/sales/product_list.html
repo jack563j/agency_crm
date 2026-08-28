@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Product Catalog | Agency CRM{% endblock %}
+{% block header_title %}Services & Product Catalog{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h3 class="text-sm font-bold text-slate-800">Agency Service Catalog</h3>
+            <p class="text-xs text-slate-400">Products and recurring retainers available on quotes</p>
+        </div>
+        <a href="/admin/sales/product/add/" target="_blank" class="inline-flex items-center px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold rounded-xl shadow-md shadow-teal-600/20 transition">
+            <i class="fa-solid fa-plus mr-1.5"></i> Add Product
+        </a>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="bg-slate-50/80 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-100">
+                        <th class="py-3.5 px-6">Product / Service Name</th>
+                        <th class="py-3.5 px-6">SKU Code</th>
+                        <th class="py-3.5 px-6">Standard Unit Price</th>
+                        <th class="py-3.5 px-6">Active Status</th>
+                        <th class="py-3.5 px-6 text-right">Admin</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700">
+                    {% for prod in products %}
+                    <tr class="hover:bg-slate-50/80 transition">
+                        <td class="py-4 px-6 font-bold text-slate-900">{{ prod.name }}</td>
+                        <td class="py-4 px-6 font-mono text-slate-500">{{ prod.sku|default:"—" }}</td>
+                        <td class="py-4 px-6 font-bold text-slate-900">${{ prod.unit_price|floatformat:2 }}</td>
+                        <td class="py-4 px-6">
+                            {% if prod.is_active %}
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800">Active</span>
+                            {% else %}
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600">Archived</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 px-6 text-right">
+                            <a href="/admin/sales/product/{{ prod.id }}/change/" class="text-slate-400 hover:text-slate-700 p-1">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="py-12 text-center text-slate-400">No products configured yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

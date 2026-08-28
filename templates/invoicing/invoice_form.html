@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Invoice | Agency CRM{% endblock %}
+{% block header_title %}Generate New Invoice{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="mb-6 pb-4 border-b border-slate-100 flex items-center justify-between">
+            <div>
+                <h3 class="text-base font-bold text-slate-900">Invoice Information</h3>
+                <p class="text-xs text-slate-500">Bill a client directly with itemized services</p>
+            </div>
+            <a href="{% url 'invoice_list' %}" class="text-xs font-semibold text-slate-500 hover:text-slate-800">
+                Cancel
+            </a>
+        </div>
+
+        <form method="post" class="space-y-6 text-xs">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Client Company Name *</label>
+                    <input type="text" name="company_name" required placeholder="e.g. Acme Corp" 
+                           class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-teal-500 focus:ring-1 focus:ring-teal-500 rounded-xl px-3.5 py-2.5 text-slate-900 outline-none transition">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Payment Due Term</label>
+                    <select name="due_date_days" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-teal-500 focus:ring-1 focus:ring-teal-500 rounded-xl px-3.5 py-2.5 text-slate-900 outline-none transition">
+                        <option value="0">Due on receipt (0 Days)</option>
+                        <option value="15">Net 15 Days</option>
+                        <option value="30" selected>Net 30 Days</option>
+                        <option value="60">Net 60 Days</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Line Items Section -->
+            <div class="pt-4 border-t border-slate-100">
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="font-bold text-slate-800 uppercase tracking-wider text-[11px]">Billed Services & Line Items</h4>
+                    <button type="button" onclick="addLineItem()" class="px-3 py-1 bg-teal-50 hover:bg-teal-100 text-teal-700 font-semibold rounded-lg text-xs transition">
+                        <i class="fa-solid fa-plus mr-1"></i> Add Line
+                    </button>
+                </div>
+
+                <div id="line-items-container" class="space-y-3">
+                    <div class="line-item-row flex items-center space-x-3 bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+                        <div class="flex-1">
+                            <input type="text" name="item_description[]" required placeholder="Service description" 
+                                   class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none">
+                        </div>
+                        <div class="w-20">
+                            <input type="number" name="item_quantity[]" value="1" min="1" placeholder="Qty" 
+                                   class="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-center text-slate-900 outline-none">
+                        </div>
+                        <div class="w-28">
+                            <input type="number" step="0.01" name="item_price[]" required placeholder="Price ($)" 
+                                   class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-right text-slate-900 outline-none">
+                        </div>
+                        <button type="button" onclick="removeLineItem(this)" class="text-slate-400 hover:text-rose-500 p-2">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1">Invoice Notes / Bank Instructions</label>
+                <textarea name="notes" rows="2" placeholder="Payment details or client instructions..." 
+                          class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-teal-500 focus:ring-1 focus:ring-teal-500 rounded-xl px-3.5 py-2.5 text-slate-900 outline-none transition"></textarea>
+            </div>
+
+            <div class="pt-4 flex justify-end space-x-3">
+                <a href="{% url 'invoice_list' %}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition">
+                    Cancel
+                </a>
+                <button type="submit" class="px-6 py-2.5 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-xl shadow-md shadow-teal-600/20 transition">
+                    Generate Invoice
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function addLineItem() {
+    const container = document.getElementById('line-items-container');
+    const row = document.createElement('div');
+    row.className = 'line-item-row flex items-center space-x-3 bg-slate-50 p-3 rounded-xl border border-slate-200/80';
+    row.innerHTML = `
+        <div class="flex-1">
+            <input type="text" name="item_description[]" required placeholder="Service description" 
+                   class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none">
+        </div>
+        <div class="w-20">
+            <input type="number" name="item_quantity[]" value="1" min="1" placeholder="Qty" 
+                   class="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-center text-slate-900 outline-none">
+        </div>
+        <div class="w-28">
+            <input type="number" step="0.01" name="item_price[]" required placeholder="Price ($)" 
+                   class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-right text-slate-900 outline-none">
+        </div>
+        <button type="button" onclick="removeLineItem(this)" class="text-slate-400 hover:text-rose-500 p-2">
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
+    `;
+    container.appendChild(row);
+}
+
+function removeLineItem(btn) {
+    const rows = document.querySelectorAll('.line-item-row');
+    if (rows.length > 1) {
+        btn.closest('.line-item-row').remove();
+    }
+}
+</script>
+{% endblock %}

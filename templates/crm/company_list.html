@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Companies | Agency CRM{% endblock %}
+{% block header_title %}Client & Prospect Companies{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="bg-slate-50/80 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-100">
+                        <th class="py-3.5 px-6">Company Name</th>
+                        <th class="py-3.5 px-6">Industry</th>
+                        <th class="py-3.5 px-6">Website</th>
+                        <th class="py-3.5 px-6">Contacts</th>
+                        <th class="py-3.5 px-6">Active Deals</th>
+                        <th class="py-3.5 px-6 text-right">Admin</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700">
+                    {% for comp in companies %}
+                    <tr class="hover:bg-slate-50/80 transition">
+                        <td class="py-4 px-6 font-bold text-slate-900">{{ comp.name }}</td>
+                        <td class="py-4 px-6 font-medium text-slate-600">{{ comp.industry|default:"—" }}</td>
+                        <td class="py-4 px-6 text-teal-600 font-medium">
+                            {% if comp.website %}<a href="{{ comp.website }}" target="_blank" class="hover:underline">{{ comp.website }}</a>{% else %}—{% endif %}
+                        </td>
+                        <td class="py-4 px-6 font-medium">{{ comp.contacts.count }}</td>
+                        <td class="py-4 px-6 font-semibold text-slate-900">{{ comp.opportunities.count }}</td>
+                        <td class="py-4 px-6 text-right">
+                            <a href="/admin/crm/company/{{ comp.id }}/change/" class="text-slate-400 hover:text-slate-700 p-1">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="py-12 text-center text-slate-400">No companies recorded yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

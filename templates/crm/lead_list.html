@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}Leads | Agency CRM{% endblock %}
+{% block header_title %}Inbound & Sales Leads{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header Actions & Filters -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <!-- Status Filter Chips -->
+        <div class="flex items-center space-x-2 overflow-x-auto text-xs">
+            <a href="{% url 'lead_list' %}" class="px-3 py-1.5 rounded-lg font-semibold transition {% if not current_status %}bg-teal-600 text-white shadow-sm{% else %}bg-white border border-slate-200 text-slate-600 hover:bg-slate-50{% endif %}">
+                All Leads
+            </a>
+            {% for s_val, s_label in statuses %}
+            <a href="{% url 'lead_list' %}?status={{ s_val }}" class="px-3 py-1.5 rounded-lg font-semibold transition {% if current_status == s_val %}bg-teal-600 text-white shadow-sm{% else %}bg-white border border-slate-200 text-slate-600 hover:bg-slate-50{% endif %}">
+                {{ s_label }}
+            </a>
+            {% endfor %}
+        </div>
+
+        <!-- Add Lead Button -->
+        <a href="{% url 'lead_create' %}" class="inline-flex items-center px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold rounded-xl shadow-md shadow-teal-600/20 transition shrink-0">
+            <i class="fa-solid fa-plus mr-1.5"></i> New Lead
+        </a>
+    </div>
+
+    <!-- Leads Table -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="bg-slate-50/80 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-100">
+                        <th class="py-3.5 px-6">Lead Title</th>
+                        <th class="py-3.5 px-6">Company</th>
+                        <th class="py-3.5 px-6">Contact</th>
+                        <th class="py-3.5 px-6">Source</th>
+                        <th class="py-3.5 px-6">Status</th>
+                        <th class="py-3.5 px-6">Assignee</th>
+                        <th class="py-3.5 px-6 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700">
+                    {% for lead in leads %}
+                    <tr class="hover:bg-slate-50/80 transition">
+                        <td class="py-4 px-6 font-bold text-slate-900">{{ lead.title }}</td>
+                        <td class="py-4 px-6 font-medium">{% if lead.company %}{{ lead.company.name }}{% else %}—{% endif %}</td>
+                        <td class="py-4 px-6">
+                            {% if lead.contact %}
+                                <p class="font-medium text-slate-800">{{ lead.contact.full_name }}</p>
+                                <p class="text-[11px] text-slate-400">{{ lead.contact.email }}</p>
+                            {% else %}—{% endif %}
+                        </td>
+                        <td class="py-4 px-6">
+                            <span class="px-2.5 py-1 rounded-md text-[11px] font-medium bg-slate-100 text-slate-600 capitalize">
+                                {{ lead.get_source_display }}
+                            </span>
+                        </td>
+                        <td class="py-4 px-6">
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold 
+                                {% if lead.status == 'new' %}bg-amber-100 text-amber-800
+                                {% elif lead.status == 'converted' %}bg-emerald-100 text-emerald-800
+                                {% elif lead.status == 'qualified' %}bg-blue-100 text-blue-800
+                                {% else %}bg-slate-100 text-slate-600{% endif %}">
+                                {{ lead.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="py-4 px-6 font-medium text-slate-600">{{ lead.assigned_to.username|default:"Unassigned" }}</td>
+                        <td class="py-4 px-6 text-right space-x-2">
+                            {% if lead.status != 'converted' %}
+                            <a href="{% url 'lead_convert' lead.id %}" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-semibold transition">
+                                <i class="fa-solid fa-arrows-rotate mr-1"></i> Convert to Deal
+                            </a>
+                            {% endif %}
+                            <a href="/admin/crm/lead/{{ lead.id }}/change/" class="text-slate-400 hover:text-slate-700 text-xs p-1">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="py-12 text-center text-slate-400">
+                            <i class="fa-solid fa-bullseye text-3xl mb-2 block text-slate-300"></i>
+                            No leads found. Click <b>New Lead</b> or ask the <b>AI Copilot</b> to create one!
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Contacts | Agency CRM{% endblock %}
+{% block header_title %}Client & Prospect Contacts{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="bg-slate-50/80 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-100">
+                        <th class="py-3.5 px-6">Contact Name</th>
+                        <th class="py-3.5 px-6">Email Address</th>
+                        <th class="py-3.5 px-6">Company</th>
+                        <th class="py-3.5 px-6">Job Title</th>
+                        <th class="py-3.5 px-6">Phone</th>
+                        <th class="py-3.5 px-6 text-right">Admin</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700">
+                    {% for contact in contacts %}
+                    <tr class="hover:bg-slate-50/80 transition">
+                        <td class="py-4 px-6 font-bold text-slate-900">{{ contact.full_name }}</td>
+                        <td class="py-4 px-6 text-teal-600 font-medium">{{ contact.email }}</td>
+                        <td class="py-4 px-6 font-medium text-slate-700">{% if contact.company %}{{ contact.company.name }}{% else %}—{% endif %}</td>
+                        <td class="py-4 px-6 text-slate-500">{{ contact.job_title|default:"—" }}</td>
+                        <td class="py-4 px-6 text-slate-500">{{ contact.phone|default:"—" }}</td>
+                        <td class="py-4 px-6 text-right">
+                            <a href="/admin/crm/contact/{{ contact.id }}/change/" class="text-slate-400 hover:text-slate-700 p-1">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="py-12 text-center text-slate-400">No contacts recorded yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
