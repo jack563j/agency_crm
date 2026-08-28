@@ -20,7 +20,7 @@ User = get_user_model()
 
 
 # ---------------------------------------------------------------------------
-# CRM Tool Declarations for Gemini Function Calling
+# CRM Tool Declarations for Gemini Function Calling (UPPERCASE Types required)
 # ---------------------------------------------------------------------------
 
 TOOLS_DEFINITION = [
@@ -28,14 +28,14 @@ TOOLS_DEFINITION = [
         "name": "create_user_account",
         "description": "Create a new team member/user account. STRICTLY RESTRICTED TO ADMINS AND MANAGERS ONLY.",
         "parameters": {
-            "type": "object",
+            "type": "OBJECT",
             "properties": {
-                "username": {"type": "string", "description": "Unique username (e.g., 'john_doe')"},
-                "email": {"type": "string", "description": "User email address"},
-                "password": {"type": "string", "description": "Initial password (if not provided, a secure one will be generated)"},
-                "role": {"type": "string", "description": "Role to assign: 'Admin', 'Sales Representative', or 'Accountant'"},
-                "first_name": {"type": "string", "description": "First name"},
-                "last_name": {"type": "string", "description": "Last name"}
+                "username": {"type": "STRING", "description": "Unique username (e.g., 'john_doe')"},
+                "email": {"type": "STRING", "description": "User email address"},
+                "password": {"type": "STRING", "description": "Initial password (if not provided, a secure one will be generated)"},
+                "role": {"type": "STRING", "description": "Role to assign: 'Admin', 'Sales Representative', or 'Accountant'"},
+                "first_name": {"type": "STRING", "description": "First name"},
+                "last_name": {"type": "STRING", "description": "Last name"}
             },
             "required": ["username", "email", "role"]
         }
@@ -44,15 +44,15 @@ TOOLS_DEFINITION = [
         "name": "create_lead",
         "description": "Create a new inbound or outbound sales lead with company and contact details.",
         "parameters": {
-            "type": "object",
+            "type": "OBJECT",
             "properties": {
-                "title": {"type": "string", "description": "Lead subject or deal interest (e.g. 'Cloud Migration Contract')"},
-                "company_name": {"type": "string", "description": "Name of the prospective client company"},
-                "contact_name": {"type": "string", "description": "Full name of the primary contact person"},
-                "email": {"type": "string", "description": "Contact email address"},
-                "phone": {"type": "string", "description": "Contact phone number (optional)"},
-                "source": {"type": "string", "description": "Lead source: website, referral, cold_call, social, event, other"},
-                "notes": {"type": "string", "description": "Notes or requirements from the lead"}
+                "title": {"type": "STRING", "description": "Lead subject or deal interest (e.g. 'Cloud Migration Contract')"},
+                "company_name": {"type": "STRING", "description": "Name of the prospective client company"},
+                "contact_name": {"type": "STRING", "description": "Full name of the primary contact person"},
+                "email": {"type": "STRING", "description": "Contact email address"},
+                "phone": {"type": "STRING", "description": "Contact phone number (optional)"},
+                "source": {"type": "STRING", "description": "Lead source: website, referral, cold_call, social, event, other"},
+                "notes": {"type": "STRING", "description": "Notes or requirements from the lead"}
             },
             "required": ["title", "company_name"]
         }
@@ -61,22 +61,22 @@ TOOLS_DEFINITION = [
         "name": "create_quote",
         "description": "Create a sales price proposal (Quote) with line items for a client.",
         "parameters": {
-            "type": "object",
+            "type": "OBJECT",
             "properties": {
-                "title": {"type": "string", "description": "Quote title (e.g. 'Quote for Q3 Marketing Retainer')"},
-                "company_name": {"type": "string", "description": "Client company name"},
-                "contact_name": {"type": "string", "description": "Contact person name (optional)"},
-                "valid_until_days": {"type": "integer", "description": "Days until expiration (default: 30)"},
+                "title": {"type": "STRING", "description": "Quote title (e.g. 'Quote for Q3 Marketing Retainer')"},
+                "company_name": {"type": "STRING", "description": "Client company name"},
+                "contact_name": {"type": "STRING", "description": "Contact person name (optional)"},
+                "valid_until_days": {"type": "INTEGER", "description": "Days until expiration (default: 30)"},
                 "line_items": {
-                    "type": "array",
+                    "type": "ARRAY",
                     "description": "List of billable line items",
                     "items": {
-                        "type": "object",
+                        "type": "OBJECT",
                         "properties": {
-                            "description": {"type": "string", "description": "Product or service description"},
-                            "quantity": {"type": "integer", "description": "Quantity"},
-                            "unit_price": {"type": "number", "description": "Price per unit"},
-                            "discount": {"type": "number", "description": "Discount percentage (0-100)"}
+                            "description": {"type": "STRING", "description": "Product or service description"},
+                            "quantity": {"type": "INTEGER", "description": "Quantity"},
+                            "unit_price": {"type": "NUMBER", "description": "Price per unit"},
+                            "discount": {"type": "NUMBER", "description": "Discount percentage (0-100)"}
                         },
                         "required": ["description", "quantity", "unit_price"]
                     }
@@ -89,22 +89,22 @@ TOOLS_DEFINITION = [
         "name": "create_invoice",
         "description": "Generate a new client invoice with line items. RESTRICTED TO ADMINS AND ACCOUNTANTS.",
         "parameters": {
-            "type": "object",
+            "type": "OBJECT",
             "properties": {
-                "company_name": {"type": "string", "description": "Client company name"},
-                "contact_name": {"type": "string", "description": "Contact person name (optional)"},
-                "due_date_days": {"type": "integer", "description": "Days until payment due (default: 30)"},
-                "notes": {"type": "string", "description": "Invoice notes or payment terms"},
+                "company_name": {"type": "STRING", "description": "Client company name"},
+                "contact_name": {"type": "STRING", "description": "Contact person name (optional)"},
+                "due_date_days": {"type": "INTEGER", "description": "Days until payment due (default: 30)"},
+                "notes": {"type": "STRING", "description": "Invoice notes or payment terms"},
                 "line_items": {
-                    "type": "array",
+                    "type": "ARRAY",
                     "description": "List of billed line items",
                     "items": {
-                        "type": "object",
+                        "type": "OBJECT",
                         "properties": {
-                            "description": {"type": "string", "description": "Item description"},
-                            "quantity": {"type": "integer", "description": "Quantity"},
-                            "unit_price": {"type": "number", "description": "Price per unit"},
-                            "discount": {"type": "number", "description": "Discount percentage (0-100)"}
+                            "description": {"type": "STRING", "description": "Item description"},
+                            "quantity": {"type": "INTEGER", "description": "Quantity"},
+                            "unit_price": {"type": "NUMBER", "description": "Price per unit"},
+                            "discount": {"type": "NUMBER", "description": "Discount percentage (0-100)"}
                         },
                         "required": ["description", "quantity", "unit_price"]
                     }
@@ -117,10 +117,10 @@ TOOLS_DEFINITION = [
         "name": "convert_record",
         "description": "Convert a Lead to an Opportunity, or convert a Quote to a Sales Order, or convert an Order to an Invoice.",
         "parameters": {
-            "type": "object",
+            "type": "OBJECT",
             "properties": {
-                "conversion_type": {"type": "string", "description": "'lead_to_opportunity', 'quote_to_order', or 'order_to_invoice'"},
-                "identifier": {"type": "string", "description": "ID or title/company of the record to convert"}
+                "conversion_type": {"type": "STRING", "description": "'lead_to_opportunity', 'quote_to_order', or 'order_to_invoice'"},
+                "identifier": {"type": "STRING", "description": "ID or title/company of the record to convert"}
             },
             "required": ["conversion_type", "identifier"]
         }
@@ -129,9 +129,9 @@ TOOLS_DEFINITION = [
         "name": "get_crm_insights",
         "description": "Query CRM performance metrics, pipeline totals, overdue balances, or active lead stats.",
         "parameters": {
-            "type": "object",
+            "type": "OBJECT",
             "properties": {
-                "query_topic": {"type": "string", "description": "Topic to query: 'pipeline', 'revenue', 'overdue_invoices', 'my_leads', 'team_summary'"}
+                "query_topic": {"type": "STRING", "description": "Topic to query: 'pipeline', 'revenue', 'overdue_invoices', 'my_leads', 'team_summary'"}
             },
             "required": ["query_topic"]
         }
@@ -180,7 +180,7 @@ def execute_tool(tool_name: str, args: dict, user) -> dict:
 
         return {
             "success": True,
-            "message": f"Successfully created user account for '{username}' with role '{role}'. Credentials: Username=`{username}`, Password=`{password}`",
+            "message": f"Successfully created user account for **{username}** with role `{role}`. Login: Username=`{username}`, Password=`{password}`",
             "credentials": {"username": username, "password": password, "role": role}
         }
 
@@ -216,7 +216,7 @@ def execute_tool(tool_name: str, args: dict, user) -> dict:
             )
         return {
             "success": True,
-            "message": f"Lead '{lead.title}' created successfully for {company.name}. View it at [Leads Hub](/crm/leads/).",
+            "message": f"✅ Lead **'{lead.title}'** created successfully for **{company.name}**. [Open Leads Hub](/crm/leads/).",
             "lead_id": lead.id
         }
 
@@ -258,7 +258,7 @@ def execute_tool(tool_name: str, args: dict, user) -> dict:
 
         return {
             "success": True,
-            "message": f"Quote '{quote.title}' created for {company.name} with {len(line_items_data)} items. Total: **${float(total):,.2f}**. View at [Quotes Hub](/sales/quotes/).",
+            "message": f"✅ Quote **'{quote.title}'** created for **{company.name}** with {len(line_items_data)} items. Total: **${float(total):,.2f}**. [Open Quotes Hub](/sales/quotes/).",
             "quote_id": quote.id,
             "total": float(total)
         }
@@ -308,7 +308,7 @@ def execute_tool(tool_name: str, args: dict, user) -> dict:
 
         return {
             "success": True,
-            "message": f"Invoice **#{invoice.invoice_number}** created for {company.name}. Total: **${invoice.subtotal:,.2f}**. [View & Print PDF](/invoices/{invoice.id}/).",
+            "message": f"✅ Invoice **#{invoice.invoice_number}** created for **{company.name}**. Total: **${invoice.subtotal:,.2f}**. [View & Print PDF](/invoices/{invoice.id}/).",
             "invoice_id": invoice.id,
             "invoice_number": invoice.invoice_number,
             "pdf_link": f"/invoices/{invoice.id}/"
@@ -336,7 +336,7 @@ def execute_tool(tool_name: str, args: dict, user) -> dict:
                 )
                 lead.status = LeadStatus.CONVERTED
                 lead.save()
-            return {"success": True, "message": f"Lead '{lead.title}' converted to Opportunity Deal '{opp.title}'. View at [Opportunities Hub](/crm/opportunities/)."}
+            return {"success": True, "message": f"✅ Lead **'{lead.title}'** converted to Opportunity Deal **'{opp.title}'**. [Open Opportunities Hub](/crm/opportunities/)."}
 
         elif conv_type == "quote_to_order":
             quote = Quote.objects.filter(title__icontains=identifier).first() or Quote.objects.filter(id__iexact=identifier).first()
@@ -360,7 +360,7 @@ def execute_tool(tool_name: str, args: dict, user) -> dict:
                         order=order, product=item.product, description=item.description,
                         quantity=item.quantity, unit_price=item.unit_price, discount=item.discount
                     )
-            return {"success": True, "message": f"Quote '{quote.title}' converted to Confirmed Sales Order #{order.id}. View at [Orders Hub](/sales/orders/)."}
+            return {"success": True, "message": f"✅ Quote **'{quote.title}'** converted to Confirmed Sales Order **#ORD-{order.id}**. [Open Orders Hub](/sales/orders/)."}
 
         elif conv_type == "order_to_invoice":
             if is_sales_rep(user):
@@ -382,7 +382,7 @@ def execute_tool(tool_name: str, args: dict, user) -> dict:
                         invoice=invoice, product=item.product, description=item.description,
                         quantity=item.quantity, unit_price=item.unit_price, discount=item.discount
                     )
-            return {"success": True, "message": f"Invoice **#{invoice.invoice_number}** created from Order '{order.title}'. [View & Print PDF](/invoices/{invoice.id}/)."}
+            return {"success": True, "message": f"✅ Invoice **#{invoice.invoice_number}** created from Order **'{order.title}'**. [View & Print PDF](/invoices/{invoice.id}/)."}
 
     # 6. Query Insights (Role Filtered)
     elif tool_name == "get_crm_insights":
@@ -449,7 +449,7 @@ CURRENT USER CONTEXT:
 STRICT PERMISSION & SECURITY RULES:
 1. USER CREATION: Only 'Admin' or 'Manager' roles can create new users/team members. If a Sales Rep or Accountant asks to create a user, politely refuse and state that only Administrators have this privilege.
 2. FINANCIAL ACCESS: Sales Reps cannot view global company profit or all-team billing totals. They only see their assigned pipeline.
-3. DATA MODIFICATION: Always execute actions via function tools.
+3. DATA MODIFICATION: Always execute actions via function tools when explicit data creation is requested.
 
 CLARIFICATION & MISSING DETAILS PROTOCOL:
 - If the user asks to create an item (Lead, Quote, Invoice) but omits critical parameters (such as company name, line item descriptions, quantities, or prices), DO NOT guess or create dummy values.
@@ -460,74 +460,61 @@ USER MANUAL & PRODUCT GUIDE:
 - Format responses nicely with markdown, bullet points, and bold highlights.
 """
 
-    # Supported model identifiers in Google AI Studio v1beta API
-    models_to_try = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-1.5-pro", "gemini-2.0-flash-exp"]
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
 
-    last_error = ""
-
-    for model_name in models_to_try:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
-
-        # Build contents payload
-        contents = []
-        for msg in chat_history[-6:]:  # keep last 6 turns
-            contents.append({
-                "role": "user" if msg["role"] == "user" else "model",
-                "parts": [{"text": msg["content"]}]
-            })
+    # Build contents payload
+    contents = []
+    for msg in chat_history[-6:]:
         contents.append({
-            "role": "user",
-            "parts": [{"text": user_message}]
+            "role": "user" if msg["role"] == "user" else "model",
+            "parts": [{"text": msg["content"]}]
         })
+    contents.append({
+        "role": "user",
+        "parts": [{"text": user_message}]
+    })
 
-        payload = {
-            "system_instruction": {
-                "parts": [{"text": system_instruction}]
-            },
-            "contents": contents,
-            "tools": [{"function_declarations": TOOLS_DEFINITION}],
-            "generationConfig": {
-                "temperature": 0.3,
-                "maxOutputTokens": 1000
-            }
+    payload = {
+        "system_instruction": {
+            "parts": [{"text": system_instruction}]
+        },
+        "contents": contents,
+        "tools": [{"function_declarations": TOOLS_DEFINITION}],
+        "generationConfig": {
+            "temperature": 0.3,
+            "maxOutputTokens": 1000
         }
+    }
 
-        try:
-            res = requests.post(url, json=payload, timeout=20)
-            res_data = res.json()
+    try:
+        res = requests.post(url, json=payload, timeout=20)
+        res_data = res.json()
 
-            if "error" in res_data:
-                last_error = res_data["error"].get("message", "API Error")
-                continue
+        if "error" in res_data:
+            return f"❌ Gemini API Error: {res_data['error'].get('message', 'Unknown error')}", chat_history
 
-            candidates = res_data.get("candidates", [])
-            if not candidates:
-                continue
+        candidates = res_data.get("candidates", [])
+        if not candidates:
+            return "I processed your request, but received an empty response.", chat_history
 
-            content_obj = candidates[0].get("content", {})
-            parts = content_obj.get("parts", [])
+        content_obj = candidates[0].get("content", {})
+        parts = content_obj.get("parts", [])
 
-            # Check for function calls
-            for part in parts:
-                if "functionCall" in part:
-                    func_call = part["functionCall"]
-                    fn_name = func_call["name"]
-                    fn_args = func_call.get("args", {})
+        # Check for function calls
+        for part in parts:
+            if "functionCall" in part:
+                func_call = part["functionCall"]
+                fn_name = func_call["name"]
+                fn_args = func_call.get("args", {})
 
-                    # Execute tool
-                    tool_result = execute_tool(fn_name, fn_args, user)
+                # Execute tool
+                tool_result = execute_tool(fn_name, fn_args, user)
+                return tool_result.get("message", "Action completed."), chat_history
 
-                    # Return direct clear message or follow-up
-                    return tool_result.get("message", "Action completed."), chat_history
+            elif "text" in part:
+                return part["text"], chat_history
 
-                elif "text" in part:
-                    return part["text"], chat_history
+        return "I completed your request.", chat_history
 
-        except Exception as e:
-            last_error = str(e)
-            continue
-
-    if last_error:
-        return f"⚠️ AI Assistant Response: {last_error}", chat_history
-
-    return "⚠️ Could not connect to Gemini API. Please ensure your GEMINI_API_KEY is valid.", chat_history
+    except Exception as e:
+        return f"⚠️ Connection error to AI service: {str(e)}", chat_history
