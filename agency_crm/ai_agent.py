@@ -20,7 +20,7 @@ User = get_user_model()
 
 
 # ---------------------------------------------------------------------------
-# CRM Tool Declarations for Gemini Function Calling (UPPERCASE Types required)
+# CRM Tool Declarations for Gemini Function Calling (UPPERCASE Types)
 # ---------------------------------------------------------------------------
 
 TOOLS_DEFINITION = [
@@ -421,45 +421,8 @@ def execute_tool(tool_name: str, args: dict, user) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Gemini Conversational Agent Caller with Dynamic Model Resolution
+# Gemini Conversational Agent Caller (Targeting Gemini 2.5 Flash / 3.6 Flash)
 # ---------------------------------------------------------------------------
-
-_CACHED_MODEL_NAME = None
-
-
-def resolve_active_model(api_key: str) -> str:
-    """Queries Google AI Studio to detect which models are enabled for this API key."""
-    global _CACHED_MODEL_NAME
-    if _CACHED_MODEL_NAME:
-        return _CACHED_MODEL_NAME
-
-    try:
-        res = requests.get(f"https://generativelanguage.googleapis.com/v1beta/models?key={api_key}", timeout=8)
-        data = res.json()
-        models = data.get("models", [])
-
-        # Filter to models that support text generation
-        supported = [
-            m["name"].replace("models/", "")
-            for m in models
-            if "generateContent" in m.get("supportedGenerationMethods", [])
-        ]
-
-        # Preferred order: flash models first for speed & free tier
-        for pref in ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-flash-8b", "gemini-1.5-pro", "gemini-pro"]:
-            for cand in supported:
-                if pref in cand:
-                    _CACHED_MODEL_NAME = cand
-                    return _CACHED_MODEL_NAME
-
-        if supported:
-            _CACHED_MODEL_NAME = supported[0]
-            return _CACHED_MODEL_NAME
-    except Exception:
-        pass
-
-    return "gemini-1.5-flash"
-
 
 def run_ai_copilot(user_message: str, chat_history: list, user) -> tuple[str, list]:
     """
@@ -497,8 +460,8 @@ USER MANUAL & PRODUCT GUIDE:
 - Format responses nicely with markdown, bullet points, and bold highlights.
 """
 
-    active_model = resolve_active_model(api_key)
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{active_model}:generateContent?key={api_key}"
+    # Exact supported model names from user's active API key
+    models_to_try = ["gemini-2.5-flash", "gemini-flash-latest", "gemini-3.6-flash", "gemini-2.5-flash-lite"]
 
     # Build contents payload
     contents = []
@@ -524,36 +487,49 @@ USER MANUAL & PRODUCT GUIDE:
         }
     }
 
-    try:
-        res = requests.post(url, json=payload, timeout=20)
-        res_data = res.json()
+    last_err = ""
+    for model_name in models_to_try:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
 
-        if "error" in res_data:
-            return f"❌ Gemini API Error ({active_model}): {res_data['error'].get('message', 'Unknown error')}", chat_history
+        try:
+            res = requests.post(url, json=payload, timeout=20)
+            res_data = res.json()
 
-        candidates = res_data.get("candidates", [])
-        if not candidates:
-            return "I processed your request, but received an empty response.", chat_history
+            if "error" in res_data:
+                last_err = res_data["error"].get("message", "API Error")
+                continue
 
-        content_obj = candidates[0].get("content", {})
-        parts = content_obj.get("parts", [])
+            candidates = res_data.get("candidates", [])
+            if not candidates:
+                continue
 
-        # Check for function calls
-        for part in parts:
-            if "functionCall" in part:
-                func_call = part["functionCall"]
-                fn_name = func_call["name"]
-                fn_args = func_call.get("args", {})
+            content_obj = candidates[0].get("content", {})
+            parts = content_obj.get("parts", [])
 
-                # Execute tool
-                tool_result = execute_tool(fn_name, fn_args, user)
-                return tool_result.get("message", "Action completed."), chat_history
+            # Check for function calls
+            for part in parts:
+                if "functionCall" in part:
+                    func_call = part["functionCall"]
+                    fn_name = func_call["name"]
+                    fn_args = func_call.get("args", {})
 
-            elif "text" in part:
-                return part["text"], chat_history
+                    # Execute tool
+                    tool_result = execute_tool(fn_name, fn_args, user)
+                    return tool_result.get("message", "Action completed."), chat_history
 
-        return "I completed your request.", chat_history
+                elif "text" in part and not part.get("thought", False):
+                    return part["text"], chat_history
 
-    except Exception as e:
-        return f"⚠️ Connection error to AI service: {str(e)}", chat_history
+            # Fallback to any text part if thought flag was on all
+            for part in parts:
+                if "text" in part:
+                    return part["text"], chat_history
 
+        except Exception as e:
+            last_err = str(e)
+            continue
+
+    if last_err:
+        return f"❌ Gemini API Error: {last_err}", chat_history
+
+    return "I processed your request, but received an empty response.", chat_history
