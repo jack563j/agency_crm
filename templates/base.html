@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Agency CRM{% endblock %}</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -12,128 +11,134 @@
                 extend: {
                     colors: {
                         brand: {
-                            50: '#f0fdfa',
-                            100: '#ccfbf1',
-                            500: '#14b8a6',
-                            600: '#0d9488',
-                            700: '#0f766e',
-                            800: '#115e59',
-                            900: '#134e4a',
+                            50: '#f0fdfa', 100: '#ccfbf1',
+                            500: '#14b8a6', 600: '#0d9488',
+                            700: '#0f766e', 800: '#115e59', 900: '#134e4a',
                         }
                     }
                 }
             }
         }
     </script>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
 
-        /* Sidebar slide transition */
-        #sidebar {
-            transition: transform 0.25s ease;
-        }
+        /* Smooth sidebar slide on mobile */
+        #sidebar { transition: transform 0.25s cubic-bezier(0.4,0,0.2,1); }
+        #sidebar-overlay { transition: opacity 0.25s ease; }
+        body.menu-open { overflow: hidden; }
 
-        /* Overlay for mobile drawer */
-        #sidebar-overlay {
-            transition: opacity 0.25s ease;
-        }
-
-        /* Prevent body scroll when mobile menu open */
-        body.sidebar-open {
-            overflow: hidden;
-        }
-
-        /* Scrollbar thin */
-        #sidebar nav::-webkit-scrollbar { width: 4px; }
-        #sidebar nav::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-
-        /* Touch-friendly tap targets */
-        @media (max-width: 768px) {
-            .nav-link { padding-top: 12px !important; padding-bottom: 12px !important; }
-        }
+        /* Thin scrollbar for sidebar nav */
+        #sidebar-nav::-webkit-scrollbar { width: 3px; }
+        #sidebar-nav::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen">
 
-    <!-- ====================== MOBILE OVERLAY ====================== -->
+<!--
+    DESKTOP (lg+): Flex row layout. Sidebar is in normal document flow (static, w-64).
+    MOBILE  (<lg): Sidebar becomes a fixed overlay drawer that slides in from the left.
+    This preserves the original desktop layout exactly.
+-->
+<body class="bg-slate-50 text-slate-800 min-h-screen flex">
+
+    <!-- ── MOBILE OVERLAY (only visible when drawer is open) ── -->
     <div id="sidebar-overlay"
-         class="fixed inset-0 bg-black/50 z-30 opacity-0 pointer-events-none"
+         class="fixed inset-0 bg-black/50 z-30 opacity-0 pointer-events-none lg:hidden"
          onclick="closeSidebar()">
     </div>
 
-    <!-- ====================== SIDEBAR ====================== -->
+    <!-- ══════════════════════════════════════════════
+         SIDEBAR
+         - Desktop: static, in normal flex flow (w-64, no transforms needed)
+         - Mobile:  fixed overlay, slides in via translate-x
+    ══════════════════════════════════════════════ -->
     <aside id="sidebar"
-           class="fixed top-0 left-0 h-full w-72 bg-slate-900 text-slate-300 flex flex-col z-40
-                  -translate-x-full lg:translate-x-0 lg:static lg:z-auto">
+           class="
+               w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0
+               fixed inset-y-0 left-0 z-40 -translate-x-full
+               lg:relative lg:translate-x-0 lg:z-auto
+           ">
 
-        <!-- Brand Header -->
+        <!-- Brand -->
         <div class="h-16 flex items-center justify-between px-5 bg-slate-950/40 border-b border-slate-800 shrink-0">
-            <a href="{% url 'dashboard' %}" class="flex items-center space-x-3">
-                <div class="w-9 h-9 bg-teal-500 text-white rounded-lg flex items-center justify-center font-bold text-lg shadow-md shadow-teal-500/20">
+            <a href="{% url 'dashboard' %}" class="flex items-center space-x-3 min-w-0">
+                <div class="w-9 h-9 bg-teal-500 text-white rounded-lg flex items-center justify-center font-bold text-lg shadow-md shadow-teal-500/20 shrink-0">
                     <i class="fa-solid fa-layer-group"></i>
                 </div>
-                <div>
+                <div class="truncate">
                     <h1 class="text-white font-bold text-base leading-tight tracking-wide">AgencyCRM</h1>
                     <span class="text-xs text-slate-400 font-medium">Enterprise Suite</span>
                 </div>
             </a>
-            <!-- Close button (mobile only) -->
-            <button onclick="closeSidebar()" class="lg:hidden text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800 transition">
+            <!-- ✕ Close button — mobile only -->
+            <button onclick="closeSidebar()"
+                    class="lg:hidden text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800 transition shrink-0 ml-2">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
         </div>
 
-        <!-- Navigation Links -->
-        <nav class="flex-1 px-4 py-5 space-y-1 overflow-y-auto">
-            <div class="px-3 pb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Core</div>
-            <a href="{% url 'dashboard' %}" class="nav-link flex items-center px-3 py-2.5 text-sm font-medium rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition" onclick="closeSidebar()">
-                <i class="fa-solid fa-chart-pie w-5 text-teal-400 mr-3"></i> Dashboard
+        <!-- Nav Links -->
+        <nav id="sidebar-nav" class="flex-1 px-4 py-5 space-y-1 overflow-y-auto">
+            <div class="px-2 pb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">Core</div>
+
+            <a href="{% url 'dashboard' %}" onclick="closeSidebar()"
+               class="nav-link flex items-center px-3 py-2.5 text-sm font-medium rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <i class="fa-solid fa-chart-pie w-5 text-teal-400 mr-3 text-center"></i> Dashboard
             </a>
 
-            <div class="pt-4 px-3 pb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400">CRM & Pipeline</div>
-            <a href="{% url 'lead_list' %}" class="nav-link flex items-center px-3 py-2.5 text-sm font-medium rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition" onclick="closeSidebar()">
-                <i class="fa-solid fa-bullseye w-5 text-amber-400 mr-3"></i> Leads
+            <div class="pt-4 px-2 pb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">CRM & Pipeline</div>
+
+            <a href="{% url 'lead_list' %}" onclick="closeSidebar()"
+               class="nav-link flex items-center px-3 py-2.5 text-sm font-medium rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <i class="fa-solid fa-bullseye w-5 text-amber-400 mr-3 text-center"></i> Leads
             </a>
-            <a href="{% url 'opportunity_list' %}" class="nav-link flex items-center px-3 py-2.5 text-sm font-medium rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition" onclick="closeSidebar()">
-                <i class="fa-solid fa-briefcase w-5 text-emerald-400 mr-3"></i> Opportunities
+            <a href="{% url 'opportunity_list' %}" onclick="closeSidebar()"
+               class="nav-link flex items-center px-3 py-2.5 text-sm font-medium rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <i class="fa-solid fa-briefcase w-5 text-emerald-400 mr-3 text-center"></i> Opportunities
             </a>
-            <a href="{% url 'company_list' %}" class="nav-link flex items-center px-3 py-2.5 text-sm font-medium rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition" onclick="closeSidebar()">
-                <i class="fa-solid fa-building w-5 text-blue-400 mr-3"></i> Companies
+            <a href="{% url 'company_list' %}" onclick="closeSidebar()"
+               class="nav-link flex items-center px-3 py-2.5 text-sm font-medium rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <i class="fa-solid fa-building w-5 text-blue-400 mr-3 text-center"></i> Companies
             </a>
-            <a href="{% url 'contact_list' %}" class="nav-link flex items-center px-3 py-2.5 text-sm font-medium rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition" onclick="closeSidebar()">
-                <i class="fa-solid fa-address-book w-5 text-indigo-400 mr-3"></i> Contacts
+            <a href="{% url 'contact_list' %}" onclick="closeSidebar()"
+               class="nav-link flex items-center px-3 py-2.5 text-sm font-medium rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <i class="fa-solid fa-address-book w-5 text-indigo-400 mr-3 text-center"></i> Contacts
             </a>
 
-            <div class="pt-4 px-3 pb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Sales & Billing</div>
-            <a href="{% url 'quote_list' %}" class="nav-link flex items-center px-3 py-2.5 text-sm font-medium rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition" onclick="closeSidebar()">
-                <i class="fa-solid fa-file-invoice w-5 text-purple-400 mr-3"></i> Quotes
+            <div class="pt-4 px-2 pb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">Sales & Billing</div>
+
+            <a href="{% url 'quote_list' %}" onclick="closeSidebar()"
+               class="nav-link flex items-center px-3 py-2.5 text-sm font-medium rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <i class="fa-solid fa-file-invoice w-5 text-purple-400 mr-3 text-center"></i> Quotes
             </a>
-            <a href="{% url 'order_list' %}" class="nav-link flex items-center px-3 py-2.5 text-sm font-medium rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition" onclick="closeSidebar()">
-                <i class="fa-solid fa-cart-shopping w-5 text-cyan-400 mr-3"></i> Orders
+            <a href="{% url 'order_list' %}" onclick="closeSidebar()"
+               class="nav-link flex items-center px-3 py-2.5 text-sm font-medium rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <i class="fa-solid fa-cart-shopping w-5 text-cyan-400 mr-3 text-center"></i> Orders
             </a>
             {% if not request.user.groups.first.name == 'Sales Representative' %}
-            <a href="{% url 'invoice_list' %}" class="nav-link flex items-center px-3 py-2.5 text-sm font-medium rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition" onclick="closeSidebar()">
-                <i class="fa-solid fa-receipt w-5 text-rose-400 mr-3"></i> Invoices
+            <a href="{% url 'invoice_list' %}" onclick="closeSidebar()"
+               class="nav-link flex items-center px-3 py-2.5 text-sm font-medium rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <i class="fa-solid fa-receipt w-5 text-rose-400 mr-3 text-center"></i> Invoices
             </a>
             {% endif %}
-            <a href="{% url 'product_list' %}" class="nav-link flex items-center px-3 py-2.5 text-sm font-medium rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition" onclick="closeSidebar()">
-                <i class="fa-solid fa-box-open w-5 text-slate-400 mr-3"></i> Products
+            <a href="{% url 'product_list' %}" onclick="closeSidebar()"
+               class="nav-link flex items-center px-3 py-2.5 text-sm font-medium rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <i class="fa-solid fa-box-open w-5 text-slate-400 mr-3 text-center"></i> Products
             </a>
 
             {% if request.user.is_superuser or request.user.is_staff or request.user.groups.first.name == 'Admin' %}
-            <div class="pt-4 px-3 pb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Administration</div>
-            <a href="{% url 'team_management' %}" class="nav-link flex items-center px-3 py-2.5 text-sm font-medium rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition" onclick="closeSidebar()">
-                <i class="fa-solid fa-users-gear w-5 text-teal-400 mr-3"></i> Team & Roles
+            <div class="pt-4 px-2 pb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">Administration</div>
+            <a href="{% url 'team_management' %}" onclick="closeSidebar()"
+               class="nav-link flex items-center px-3 py-2.5 text-sm font-medium rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <i class="fa-solid fa-users-gear w-5 text-teal-400 mr-3 text-center"></i> Team & Roles
             </a>
             {% endif %}
         </nav>
 
-        <!-- Sidebar Footer: User Info -->
+        <!-- User Footer -->
         <div class="p-4 bg-slate-950/60 border-t border-slate-800 flex items-center justify-between shrink-0">
             <div class="flex items-center space-x-3 min-w-0">
                 <div class="w-8 h-8 rounded-full bg-teal-700 text-teal-100 flex items-center justify-center font-bold text-xs uppercase shrink-0">
@@ -146,21 +151,25 @@
             </div>
             <form method="post" action="{% url 'logout' %}">
                 {% csrf_token %}
-                <button type="submit" title="Logout" class="text-slate-400 hover:text-rose-400 transition text-sm p-2 rounded-lg hover:bg-slate-800">
+                <button type="submit" title="Logout"
+                        class="text-slate-400 hover:text-rose-400 transition text-sm p-2 rounded-lg hover:bg-slate-800">
                     <i class="fa-solid fa-arrow-right-from-bracket"></i>
                 </button>
             </form>
         </div>
     </aside>
 
-    <!-- ====================== MAIN CONTENT AREA ====================== -->
-    <div class="lg:ml-72 flex flex-col min-h-screen">
+    <!-- ══════════════════════════════════════════════
+         MAIN CONTENT AREA
+         Desktop: flex-1 beside the sidebar (original layout)
+         Mobile:  full width (sidebar is overlay, not in flow)
+    ══════════════════════════════════════════════ -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-y-auto min-h-screen">
 
         <!-- Top Navbar -->
-        <header class="h-14 lg:h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-8 sticky top-0 z-20 shadow-sm">
-            <!-- Left: Hamburger + Page Title -->
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-8 sticky top-0 z-20 shadow-sm">
             <div class="flex items-center space-x-3">
-                <!-- Hamburger (mobile only) -->
+                <!-- Hamburger button — hidden on desktop, shown on mobile -->
                 <button onclick="openSidebar()"
                         class="lg:hidden text-slate-500 hover:text-slate-900 p-2 rounded-lg hover:bg-slate-100 transition -ml-1">
                     <i class="fa-solid fa-bars text-lg"></i>
@@ -169,36 +178,28 @@
                     {% block header_title %}Overview Dashboard{% endblock %}
                 </h2>
             </div>
-
-            <!-- Right: Actions -->
-            <div class="flex items-center space-x-2 lg:space-x-3">
+            <div class="flex items-center space-x-3">
                 {% if request.user.is_superuser or request.user.is_staff %}
                 <a href="/admin/" target="_blank"
-                   class="hidden sm:inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition">
-                    <i class="fa-solid fa-sliders mr-1.5 text-slate-500"></i>
-                    <span class="hidden md:inline">Django Admin</span>
-                    <span class="md:hidden">Admin</span>
+                   class="inline-flex items-center px-3.5 py-1.5 text-xs font-semibold rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition shadow-sm">
+                    <i class="fa-solid fa-sliders mr-2 text-slate-500"></i>
+                    <span class="hidden sm:inline">Django Admin</span>
+                    <span class="sm:hidden">Admin</span>
                 </a>
                 {% endif %}
-                <!-- Mobile: show user avatar -->
-                <div class="lg:hidden w-8 h-8 rounded-full bg-teal-700 text-teal-100 flex items-center justify-center font-bold text-xs uppercase">
-                    {{ request.user.username|slice:":2" }}
-                </div>
             </div>
         </header>
 
         <!-- Alert Messages -->
         {% if messages %}
-        <div class="px-4 lg:px-8 pt-4">
+        <div class="px-4 lg:px-8 pt-5">
             {% for message in messages %}
-            <div class="p-3 rounded-xl text-xs font-medium flex items-center justify-between shadow-sm mb-2
+            <div class="p-3.5 rounded-xl text-xs font-medium flex items-center justify-between shadow-sm mb-2
                 {% if message.tags == 'success' %}bg-emerald-50 text-emerald-800 border border-emerald-200
                 {% elif message.tags == 'error' %}bg-rose-50 text-rose-800 border border-rose-200
                 {% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
                 <span>{{ message }}</span>
-                <button onclick="this.parentElement.remove()" class="text-sm font-bold opacity-60 hover:opacity-100 ml-4">
-                    &times;
-                </button>
+                <button onclick="this.parentElement.remove()" class="text-sm font-bold opacity-60 hover:opacity-100 ml-4">&times;</button>
             </div>
             {% endfor %}
         </div>
@@ -210,30 +211,32 @@
         </main>
     </div>
 
-    <!-- Include Floating AI Copilot Widget -->
+    <!-- AI Copilot Widget -->
     {% include 'components/ai_chat_widget.html' %}
 
-    <!-- ====================== MOBILE SIDEBAR SCRIPTS ====================== -->
+    <!-- ══════════════════════════════════════════════
+         MOBILE SIDEBAR SCRIPTS
+    ══════════════════════════════════════════════ -->
     <script>
         function openSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebar-overlay');
+            const sidebar  = document.getElementById('sidebar');
+            const overlay  = document.getElementById('sidebar-overlay');
             sidebar.classList.remove('-translate-x-full');
             overlay.classList.remove('opacity-0', 'pointer-events-none');
             overlay.classList.add('opacity-100');
-            document.body.classList.add('sidebar-open');
+            document.body.classList.add('menu-open');
         }
 
         function closeSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebar-overlay');
+            const sidebar  = document.getElementById('sidebar');
+            const overlay  = document.getElementById('sidebar-overlay');
             sidebar.classList.add('-translate-x-full');
             overlay.classList.remove('opacity-100');
             overlay.classList.add('opacity-0', 'pointer-events-none');
-            document.body.classList.remove('sidebar-open');
+            document.body.classList.remove('menu-open');
         }
 
-        // Close sidebar on Escape key
+        // Escape key closes sidebar on mobile
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') closeSidebar();
         });
@@ -242,6 +245,7 @@
         document.querySelectorAll('.nav-link').forEach(link => {
             if (link.href === window.location.href) {
                 link.classList.add('bg-slate-800', 'text-white');
+                link.classList.remove('text-slate-300');
             }
         });
     </script>
