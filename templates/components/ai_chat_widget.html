@@ -1,8 +1,8 @@
 <!-- Floating AI Copilot Widget Component -->
 <div id="ai-copilot-container" class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
 
-    <!-- Chat Window (Collapsed by default) -->
-    <div id="ai-chat-window" class="hidden w-96 md:w-[420px] h-[540px] bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl flex flex-col overflow-hidden mb-4 backdrop-blur-xl transition-all duration-300">
+    <!-- Chat Window (Collapsed by default) - full screen on mobile, fixed on desktop -->
+    <div id="ai-chat-window" class="hidden fixed bottom-0 right-0 left-0 top-0 sm:relative sm:bottom-auto sm:left-auto sm:top-auto sm:w-96 md:w-[420px] sm:h-[540px] bg-slate-900 border border-slate-700/80 sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden sm:mb-4 backdrop-blur-xl transition-all duration-300" style="height: 100dvh;" id="ai-chat-window">
         
         <!-- Header -->
         <div class="px-4 py-3 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between">
