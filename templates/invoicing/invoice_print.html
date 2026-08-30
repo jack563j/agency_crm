@@ -3,6 +3,8 @@
 {% block content %}
 <script>
     window.addEventListener('DOMContentLoaded', (event) => {
+        // Hide the action bar and auto-trigger print
+        document.querySelectorAll('.no-print').forEach(el => el.style.display = 'none');
         window.print();
     });
 </script>

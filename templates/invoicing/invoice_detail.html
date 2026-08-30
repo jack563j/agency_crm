@@ -3,179 +3,511 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice INV-{{ invoice.invoice_number }} | Agency CRM</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>Tax Invoice {{ invoice.invoice_number }} | {{ invoice.company.name|default:"Agency CRM" }}</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        @media print {
-            .no-print { display: none !important; }
-            body { background: white !important; padding: 0 !important; }
-            .invoice-card { border: none !important; shadow: none !important; padding: 0 !important; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            color: #000;
+            background: #e5e5e5;
         }
+        .page-wrapper {
+            background: #fff;
+            width: 210mm;
+            min-height: 297mm;
+            margin: 20px auto;
+            padding: 10mm 12mm;
+            border: 1px solid #ccc;
+            position: relative;
+        }
+
+        /* Top bar */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 9px;
+            color: #555;
+            margin-bottom: 4px;
+        }
+
+        /* Header section */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 6px;
+        }
+        .logo-box {
+            border: 1px solid #aaa;
+            width: 60px;
+            height: 55px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #777;
+            flex-shrink: 0;
+            margin-right: 10px;
+        }
+        .company-info {
+            flex: 1;
+            text-align: center;
+        }
+        .company-info h1 {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+        .company-info p {
+            font-size: 10px;
+            color: #333;
+            line-height: 1.5;
+        }
+        .invoice-title {
+            text-align: right;
+            flex-shrink: 0;
+        }
+        .invoice-title .tax-invoice-label {
+            font-size: 13px;
+            font-weight: bold;
+            border: 1.5px solid #000;
+            padding: 2px 10px;
+            display: inline-block;
+            margin-bottom: 6px;
+        }
+        .original-copy {
+            font-size: 9px;
+            color: #555;
+        }
+
+        /* Invoice meta table */
+        .meta-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #aaa;
+            margin-bottom: 6px;
+        }
+        .meta-table td {
+            padding: 3px 6px;
+            border: 1px solid #ccc;
+            font-size: 10px;
+            vertical-align: top;
+        }
+        .meta-table td:first-child {
+            font-weight: bold;
+            white-space: nowrap;
+            width: 30%;
+            color: #333;
+        }
+
+        /* Billing/Shipping row */
+        .billing-shipping {
+            display: flex;
+            border: 1px solid #aaa;
+            margin-bottom: 6px;
+        }
+        .billing-box, .shipping-box {
+            flex: 1;
+            padding: 5px 7px;
+        }
+        .billing-box {
+            border-right: 1px solid #aaa;
+        }
+        .billing-box h4, .shipping-box h4 {
+            font-weight: bold;
+            font-size: 10px;
+            margin-bottom: 4px;
+            text-decoration: underline;
+        }
+        .billing-shipping .info-row {
+            font-size: 10px;
+            line-height: 1.7;
+            color: #222;
+        }
+        .billing-shipping .info-row span {
+            color: #555;
+            margin-right: 8px;
+        }
+
+        /* Line items table */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #aaa;
+            margin-bottom: 0;
+        }
+        .items-table th {
+            background: #f2f2f2;
+            border: 1px solid #aaa;
+            padding: 4px 5px;
+            text-align: center;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        .items-table th.left { text-align: left; }
+        .items-table td {
+            border: 1px solid #ccc;
+            padding: 4px 5px;
+            font-size: 10px;
+            vertical-align: top;
+        }
+        .items-table td.center { text-align: center; }
+        .items-table td.right { text-align: right; }
+        .items-table td.sr { text-align: center; width: 28px; }
+        .items-table tbody tr { min-height: 18px; }
+
+        /* Empty rows to fill space */
+        .empty-rows td { height: 16px; }
+
+        /* Discount & Total rows */
+        .discount-row td {
+            border-top: 1.5px solid #aaa;
+            padding: 4px 6px;
+            font-size: 10px;
+        }
+        .total-row td {
+            background: #f5f5f5;
+            font-weight: bold;
+            font-size: 11px;
+            padding: 5px 6px;
+            border-top: 2px solid #888;
+        }
+
+        /* Amount in words */
+        .amount-words {
+            border: 1px solid #ccc;
+            border-top: none;
+            padding: 5px 7px;
+            font-size: 10px;
+        }
+        .amount-words b { font-size: 10px; }
+
+        /* Tax breakdown */
+        .tax-breakdown {
+            border: 1px solid #ccc;
+            border-top: none;
+            padding: 4px 7px;
+            font-size: 9.5px;
+            color: #333;
+        }
+
+        /* Footer section */
+        .footer-section {
+            display: flex;
+            border: 1px solid #ccc;
+            border-top: none;
+            margin-top: 0;
+        }
+        .footer-left {
+            flex: 1;
+            padding: 6px 8px;
+            border-right: 1px solid #ccc;
+        }
+        .footer-left h4 {
+            font-weight: bold;
+            font-size: 10px;
+            margin-bottom: 4px;
+        }
+        .footer-left ol {
+            padding-left: 14px;
+            font-size: 9.5px;
+            color: #333;
+            line-height: 1.6;
+        }
+        .footer-right {
+            width: 200px;
+            padding: 6px 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .footer-right .qr-placeholder {
+            border: 1px solid #ccc;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            color: #999;
+            margin-bottom: 8px;
+        }
+        .bank-details {
+            font-size: 10px;
+            line-height: 1.7;
+            width: 100%;
+        }
+        .bank-details b { font-size: 10px; }
+        .signature-section {
+            text-align: right;
+            font-size: 10px;
+            padding: 6px 8px;
+            border-top: 1px solid #ccc;
+            width: 200px;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+        .for-company {
+            font-size: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+        .sig-line {
+            margin-top: 24px;
+            border-top: 1px solid #000;
+            padding-top: 2px;
+            font-size: 10px;
+        }
+
+        /* Page footer */
+        .page-footer {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 8.5px;
+            color: #999;
+        }
+
+        /* Print styles */
+        @media print {
+            body { background: white; }
+            .page-wrapper {
+                margin: 0;
+                border: none;
+                padding: 8mm 10mm;
+                width: 100%;
+            }
+            .no-print { display: none !important; }
+        }
+
+        /* Action bar */
+        .action-bar {
+            width: 210mm;
+            margin: 0 auto 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+        }
+        .btn-back { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+        .btn-print { background: #0d9488; color: white; }
+        .btn-edit { background: white; color: #334155; border: 1px solid #cbd5e1; }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen py-10 px-4 flex justify-center">
+<body>
 
-    <div class="max-w-3xl w-full">
-        <!-- Top Action Bar (hidden when printing) -->
-        <div class="no-print mb-6 flex items-center justify-between">
-            <a href="{% url 'dashboard' %}" class="inline-flex items-center text-xs font-semibold text-slate-600 hover:text-slate-900 transition">
-                <i class="fa-solid fa-arrow-left mr-2"></i> Back to Dashboard
-            </a>
-            <div class="flex items-center space-x-3">
-                <a href="/admin/invoicing/invoice/{{ invoice.id }}/change/" class="px-4 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl text-xs font-semibold shadow-sm transition">
-                    <i class="fa-solid fa-pen mr-1.5"></i> Edit in Admin
-                </a>
-                <button onclick="window.print()" class="px-5 py-2 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-xs font-bold shadow-md shadow-teal-600/20 transition flex items-center">
-                    <i class="fa-solid fa-print mr-2"></i> Print / Save as PDF
-                </button>
+    <!-- Action Bar (hidden on print) -->
+    <div class="action-bar no-print">
+        <a href="{% url 'dashboard' %}" class="btn btn-back">&#8592; Back to Dashboard</a>
+        <div style="display:flex;gap:10px;">
+            <a href="/admin/invoicing/invoice/{{ invoice.id }}/change/" class="btn btn-edit">✏️ Edit Invoice</a>
+            <button onclick="window.print()" class="btn btn-print">🖨️ Print / Save PDF</button>
+        </div>
+    </div>
+
+    <div class="page-wrapper">
+
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <span>Page No. 1 of 1</span>
+            <span style="font-weight:bold; font-size:13px; flex:1; text-align:center;">TAX INVOICE</span>
+            <span>Original Copy</span>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <div class="logo-box">Add<br>Logo</div>
+            <div class="company-info">
+                <h1>{{ invoice.company.name|default:"Your Company Name" }}</h1>
+                <p>{{ invoice.company.address|default:"Add Address" }}</p>
+                <p>
+                    {% if invoice.contact and invoice.contact.phone %}Mobile: {{ invoice.contact.phone }}{% endif %}
+                    {% if invoice.company %}  |  mail@company.com{% endif %}
+                </p>
+                <p>GSTIN : XXXXXXXXXXXXXXXXX</p>
             </div>
         </div>
 
-        <!-- Invoice Document Sheet -->
-        <div class="invoice-card bg-white rounded-2xl border border-slate-200 shadow-xl p-10 md:p-14">
-            <!-- Header Row -->
-            <div class="flex flex-col md:flex-row md:items-start justify-between pb-8 border-b border-slate-100 gap-6">
-                <div>
-                    <div class="flex items-center space-x-3 mb-3">
-                        <div class="w-10 h-10 bg-teal-600 text-white rounded-xl flex items-center justify-center font-bold text-xl shadow-md">
-                            <i class="fa-solid fa-layer-group"></i>
-                        </div>
-                        <h1 class="text-xl font-extrabold text-slate-900 tracking-tight">Agency Operations</h1>
-                    </div>
-                    <p class="text-xs text-slate-500">100 Innovation Boulevard, Suite 400</p>
-                    <p class="text-xs text-slate-500">billing@agency.com • +1 (555) 019-2834</p>
-                </div>
+        <!-- Invoice Meta Table -->
+        <table class="meta-table">
+            <tr>
+                <td><b>Invoice</b><br>Number</td>
+                <td>: {{ invoice.invoice_number }}</td>
+                <td><b>Invoice Date</b></td>
+                <td>: {{ invoice.issue_date|date:"d-M-Y"|default:"—" }}</td>
+            </tr>
+            <tr>
+                <td><b>Due date</b></td>
+                <td>: {{ invoice.due_date|date:"d-M-Y"|default:"Due on receipt" }}</td>
+                <td><b>Place of Supply</b></td>
+                <td>: —</td>
+            </tr>
+            <tr>
+                <td><b>Reverse Charge</b></td>
+                <td colspan="3">: No</td>
+            </tr>
+        </table>
 
-                <div class="md:text-right">
-                    <span class="text-xs font-bold uppercase tracking-widest text-slate-400">Invoice</span>
-                    <h2 class="text-2xl font-black text-slate-900 mt-0.5">#{{ invoice.invoice_number }}</h2>
-                    <div class="mt-2 inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide
-                        {% if invoice.status == 'paid' %}bg-emerald-100 text-emerald-800
-                        {% elif invoice.is_overdue %}bg-rose-100 text-rose-800
-                        {% elif invoice.status == 'sent' %}bg-blue-100 text-blue-800
-                        {% else %}bg-slate-100 text-slate-700{% endif %}">
-                        {{ invoice.get_status_display }}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Client & Dates Row -->
-            <div class="grid grid-cols-2 gap-8 py-8 border-b border-slate-100 text-xs">
-                <div>
-                    <span class="font-bold uppercase tracking-wider text-slate-400 block mb-2">Billed To</span>
-                    <h3 class="text-base font-bold text-slate-900">
-                        {% if invoice.company %}{{ invoice.company.name }}{% else %}Private Client{% endif %}
-                    </h3>
-                    {% if invoice.contact %}
-                        <p class="text-slate-600 mt-1 font-medium">{{ invoice.contact.full_name }}</p>
-                        <p class="text-slate-500">{{ invoice.contact.email }}</p>
-                    {% endif %}
-                    {% if invoice.company and invoice.company.address %}
-                        <p class="text-slate-500 mt-1 whitespace-pre-line">{{ invoice.company.address }}</p>
-                    {% endif %}
-                </div>
-
-                <div class="space-y-3 md:text-right">
-                    <div>
-                        <span class="font-bold uppercase tracking-wider text-slate-400 block">Issue Date</span>
-                        <p class="font-semibold text-slate-800 mt-0.5">{{ invoice.issue_date|default:invoice.created_at|date:"M d, Y" }}</p>
-                    </div>
-                    <div>
-                        <span class="font-bold uppercase tracking-wider text-slate-400 block">Payment Due</span>
-                        <p class="font-semibold text-slate-800 mt-0.5">{{ invoice.due_date|default:"Due on receipt"|date:"M d, Y" }}</p>
-                    </div>
-                    {% if invoice.order %}
-                    <div>
-                        <span class="font-bold uppercase tracking-wider text-slate-400 block">Reference Order</span>
-                        <p class="font-semibold text-slate-600 mt-0.5">{{ invoice.order.title }}</p>
-                    </div>
-                    {% endif %}
+        <!-- Billing & Shipping Details -->
+        <div class="billing-shipping">
+            <div class="billing-box">
+                <h4>Billing Details</h4>
+                <div class="info-row">
+                    <b>Name</b><br>
+                    {% if invoice.company %}<b>{{ invoice.company.name }}</b>{% else %}—{% endif %}<br>
+                    {% if invoice.contact %}{{ invoice.contact.full_name }}<br>{% endif %}
+                    GSTIN :&nbsp;&nbsp; | Mobile: {% if invoice.contact %}{{ invoice.contact.phone|default:"+91" }}{% endif %} &nbsp; | Email: {% if invoice.contact %}{{ invoice.contact.email|default:"" }}{% endif %}<br>
+                    {{ invoice.company.address|default:"Add Address" }}
                 </div>
             </div>
-
-            <!-- Line Items Table -->
-            <div class="py-8 border-b border-slate-100">
-                <table class="w-full text-left text-xs">
-                    <thead>
-                        <tr class="text-slate-400 font-bold uppercase tracking-wider border-b border-slate-100 pb-3">
-                            <th class="pb-3">Description</th>
-                            <th class="pb-3 text-center">Qty</th>
-                            <th class="pb-3 text-right">Unit Price</th>
-                            <th class="pb-3 text-right">Discount</th>
-                            <th class="pb-3 text-right">Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-50 text-slate-700">
-                        {% for item in invoice.line_items.all %}
-                        <tr>
-                            <td class="py-3.5 pr-4">
-                                <p class="font-bold text-slate-900">
-                                    {% if item.product %}{{ item.product.name }}{% else %}{{ item.description }}{% endif %}
-                                </p>
-                                {% if item.description and item.product %}
-                                    <p class="text-[11px] text-slate-400 mt-0.5">{{ item.description }}</p>
-                                {% endif %}
-                            </td>
-                            <td class="py-3.5 text-center font-medium">{{ item.quantity }}</td>
-                            <td class="py-3.5 text-right font-medium">${{ item.unit_price|floatformat:2 }}</td>
-                            <td class="py-3.5 text-right font-medium">{% if item.discount > 0 %}{{ item.discount }}%{% else %}—{% endif %}</td>
-                            <td class="py-3.5 text-right font-bold text-slate-900">${{ item.subtotal|floatformat:2 }}</td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="5" class="py-6 text-center text-slate-400 italic">No line items attached to this invoice.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Totals Summary -->
-            <div class="py-6 flex justify-end">
-                <div class="w-72 space-y-2.5 text-xs">
-                    <div class="flex justify-between text-slate-600">
-                        <span>Subtotal</span>
-                        <span class="font-semibold text-slate-900">${{ invoice.subtotal|floatformat:2 }}</span>
-                    </div>
-                    <div class="flex justify-between text-slate-600">
-                        <span>Total Paid</span>
-                        <span class="font-semibold text-emerald-600">-${{ invoice.amount_paid|floatformat:2 }}</span>
-                    </div>
-                    <div class="pt-3 border-t border-slate-200 flex justify-between text-sm font-extrabold text-slate-900">
-                        <span>Balance Due</span>
-                        <span class="text-rose-600">${{ invoice.balance_due|floatformat:2 }}</span>
-                    </div>
+            <div class="shipping-box">
+                <h4>Shipping Details</h4>
+                <div class="info-row">
+                    <b>Name</b><br>
+                    {% if invoice.contact %}{{ invoice.contact.full_name }}{% else %}—{% endif %}<br>
+                    GSTIN :&nbsp;&nbsp; | Mobile: {% if invoice.contact %}{{ invoice.contact.phone|default:"+91" }}{% endif %} &nbsp; | Email: {% if invoice.contact %}{{ invoice.contact.email|default:"" }}{% endif %}<br>
+                    {{ invoice.company.address|default:"Add Address" }}
                 </div>
             </div>
+        </div>
 
-            <!-- Payment Records History (if any) -->
-            {% if invoice.payments.all %}
-            <div class="pt-6 border-t border-slate-100">
-                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Recorded Payments</h4>
-                <div class="space-y-1.5">
-                    {% for p in invoice.payments.all %}
-                    <div class="flex items-center justify-between text-xs p-2.5 bg-slate-50 rounded-lg text-slate-700">
-                        <div class="flex items-center space-x-2">
-                            <i class="fa-solid fa-circle-check text-emerald-500"></i>
-                            <span class="font-semibold">{{ p.payment_date|date:"M d, Y" }}</span>
-                            <span class="text-slate-400">via {{ p.get_method_display }}</span>
-                            {% if p.reference %}<span class="text-slate-400">({{ p.reference }})</span>{% endif %}
-                        </div>
-                        <span class="font-bold text-emerald-600">+${{ p.amount|floatformat:2 }}</span>
+        <!-- Line Items Table -->
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width:28px;">Sr.</th>
+                    <th class="left" style="width:auto;">Item Description</th>
+                    <th style="width:64px;">HSN/SAC</th>
+                    <th style="width:36px;">Qty</th>
+                    <th style="width:36px;">Unit</th>
+                    <th style="width:74px;">List Price</th>
+                    <th style="width:52px;">Disc.</th>
+                    <th style="width:40px;">Tax %</th>
+                    <th style="width:70px;">Amount (₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in invoice.line_items.all %}
+                <tr>
+                    <td class="sr">{{ forloop.counter }}</td>
+                    <td>
+                        {% if item.product %}<b>{{ item.product.name }}</b><br>{% endif %}
+                        {{ item.description }}
+                    </td>
+                    <td class="center">—</td>
+                    <td class="center">{{ item.quantity }}</td>
+                    <td class="center">Pcs.</td>
+                    <td class="right">{{ item.unit_price|floatformat:2 }}</td>
+                    <td class="center">{% if item.discount > 0 %}{{ item.discount }}%{% else %}—{% endif %}</td>
+                    <td class="center">18</td>
+                    <td class="right"><b>{{ item.subtotal|floatformat:2 }}</b></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" style="text-align:center; padding:12px; color:#999; font-style:italic;">No line items on this invoice.</td>
+                </tr>
+                {% endfor %}
+
+                <!-- Empty filler rows to maintain fixed height appearance -->
+                {% with invoice.line_items.count as count %}
+                {% if count < 8 %}
+                <tr class="empty-rows"><td colspan="9">&nbsp;</td></tr>
+                <tr class="empty-rows"><td colspan="9">&nbsp;</td></tr>
+                <tr class="empty-rows"><td colspan="9">&nbsp;</td></tr>
+                <tr class="empty-rows"><td colspan="9">&nbsp;</td></tr>
+                {% endif %}
+                {% endwith %}
+            </tbody>
+
+            <!-- Discount Row -->
+            <tr class="discount-row">
+                <td colspan="8" style="text-align:right; color:#555;">Discount</td>
+                <td class="right">
+                    {% if invoice.line_items.count > 0 %}
+                    - {% with invoice.subtotal as st %}{{ st|floatformat:2 }}{% endwith %}
+                    {% else %}0.00{% endif %}
+                </td>
+            </tr>
+
+            <!-- Total Row -->
+            <tr class="total-row">
+                <td colspan="8" style="text-align:right;">Total</td>
+                <td class="right">₹{{ invoice.subtotal|floatformat:2 }}</td>
+            </tr>
+        </table>
+
+        <!-- Amount in Words -->
+        <div class="amount-words">
+            <b>₹ {{ invoice.subtotal|floatformat:0 }}.00 (Amount in words)</b> &nbsp;&nbsp;
+            <span style="color:#555;">
+                Settled by : Bank : {{ invoice.subtotal|floatformat:2 }} &nbsp;|&nbsp;
+                Invoice Balance : {{ invoice.balance_due|floatformat:2 }}
+            </span>
+        </div>
+
+        <!-- Tax Breakdown -->
+        <div class="tax-breakdown">
+            Sale @18% = {{ invoice.subtotal|floatformat:2 }}, CGST = 0.00, SGST = 0.00 | Total Sale = {{ invoice.subtotal|floatformat:2 }}, Tax = 0.00, Cess = 0.00, Add. Cess = 0.00
+        </div>
+
+        <!-- Footer: Terms + Bank + Signature -->
+        <div class="footer-section">
+            <!-- Left: Terms & Conditions -->
+            <div class="footer-left">
+                <h4>Terms and Conditions</h4>
+                <p style="font-size:9.5px; color:#555; margin-bottom:4px;">E &amp; O.E</p>
+                <ol>
+                    <li>Goods once sold will not be taken back.</li>
+                    <li>Interest @ 18% p.a. will be charged if the payment for Company Name is not made within the stipulated time.</li>
+                    <li>Subject to 'Delhi' Jurisdiction only.</li>
+                </ol>
+                {% if invoice.notes %}
+                <p style="margin-top:6px; font-size:9.5px; color:#444;"><b>Notes:</b> {{ invoice.notes }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Right: QR + Bank + Signature -->
+            <div style="display:flex; flex-direction:column; width:200px; border-left:1px solid #ccc;">
+                <div style="display:flex; flex-direction:column; align-items:center; padding:6px 8px;">
+                    <div class="qr-placeholder">QR Code</div>
+                    <div class="bank-details">
+                        <b>Account Number:</b> 123456789<br>
+                        <b>Bank:</b> Your Bank Name<br>
+                        <b>IFSC:</b> IFSC0000001<br>
+                        <b>Branch:</b> City Branch<br>
+                        <b>Name:</b> {{ invoice.company.name|default:"Add Name" }}
                     </div>
-                    {% endfor %}
+                </div>
+                <div style="padding:6px 8px; border-top:1px solid #ccc; text-align:right;">
+                    <p class="for-company">For {{ invoice.company.name|default:"Company Name" }}</p>
+                    <div style="height:36px;"></div>
+                    <div class="sig-line">Signature</div>
                 </div>
             </div>
+        </div>
+
+        <!-- Page Footer -->
+        <div class="page-footer">
+            Invoice #{{ invoice.invoice_number }} &mdash; Generated by Agency CRM
+            {% if invoice.status == 'paid' %}
+            &mdash; <b style="color:green;">PAID</b>
+            {% elif invoice.is_overdue %}
+            &mdash; <b style="color:red;">OVERDUE</b>
             {% endif %}
-
-            <!-- Footer Notes -->
-            <div class="mt-10 pt-6 border-t border-slate-100 text-[11px] text-slate-400 text-center">
-                <p>Thank you for your business. Please remit payment via bank transfer or credit card within the terms specified.</p>
-            </div>
         </div>
+
     </div>
 
 </body>
