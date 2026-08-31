@@ -35,7 +35,7 @@
                         <th class="py-3.5 px-6">Deal Title</th>
                         <th class="py-3.5 px-6">Company</th>
                         <th class="py-3.5 px-6">Deal Stage</th>
-                        <th class="py-3.5 px-6">Value ($)</th>
+                        <th class="py-3.5 px-6">Value (₹)</th>
                         <th class="py-3.5 px-6">Win Probability</th>
                         <th class="py-3.5 px-6">Expected Close</th>
                         <th class="py-3.5 px-6">Assignee</th>
@@ -55,7 +55,7 @@
                                 {{ opp.get_stage_display }}
                             </span>
                         </td>
-                        <td class="py-4 px-6 font-bold text-slate-900">${{ opp.value|floatformat:2 }}</td>
+                        <td class="py-4 px-6 font-bold text-slate-900">₹{{ opp.value|floatformat:2 }}</td>
                         <td class="py-4 px-6">
                             <div class="flex items-center space-x-2">
                                 <div class="w-16 bg-slate-100 rounded-full h-1.5 overflow-hidden">

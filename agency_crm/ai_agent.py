@@ -258,7 +258,7 @@ def execute_tool(tool_name: str, args: dict, user) -> dict:
 
         return {
             "success": True,
-            "message": f"✅ Quote **'{quote.title}'** created for **{company.name}** with {len(line_items_data)} items. Total: **${float(total):,.2f}**. [Open Quotes Hub](/sales/quotes/).",
+            "message": f"✅ Quote **'{quote.title}'** created for **{company.name}** with {len(line_items_data)} items. Total: **₹{float(total):,.2f}**. [Open Quotes Hub](/sales/quotes/).",
             "quote_id": quote.id,
             "total": float(total)
         }
@@ -308,7 +308,7 @@ def execute_tool(tool_name: str, args: dict, user) -> dict:
 
         return {
             "success": True,
-            "message": f"✅ Invoice **#{invoice.invoice_number}** created for **{company.name}**. Total: **${invoice.subtotal:,.2f}**. [View & Print PDF](/invoices/{invoice.id}/).",
+            "message": f"✅ Invoice **#{invoice.invoice_number}** created for **{company.name}**. Total: **₹{invoice.subtotal:,.2f}**. [View & Print PDF](/invoices/{invoice.id}/).",
             "invoice_id": invoice.id,
             "invoice_number": invoice.invoice_number,
             "pdf_link": f"/invoices/{invoice.id}/"

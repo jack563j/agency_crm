@@ -43,7 +43,7 @@
                     <br><br>
                     You can ask me to:
                     <ul class="list-disc list-inside mt-1 space-y-0.5 text-slate-300">
-                        <li><b>Create records</b>: <i>"Add a lead for Stripe ($30k)"</i></li>
+                        <li><b>Create records</b>: <i>"Add a lead for Stripe (₹3,00,000)"</i></li>
                         <li><b>Generate proposals</b>: <i>"Draft quote for Acme"</i></li>
                         {% if request.user.is_superuser or request.user.is_staff %}
                         <li><b>Create Users</b>: <i>"Add sales rep John (john@agency.com)"</i></li>
@@ -113,9 +113,9 @@ function toggleAIChat() {
 function sendSuggestedPrompt(btn) {
     const text = btn.innerText.replace('⚡ ', '').replace('📄 ', '').replace('📊 ', '');
     if (text === "New Lead") {
-        document.getElementById("ai-input").value = "Add a new lead from Acme Corp for Web Redesign with $25k budget";
+        document.getElementById("ai-input").value = "Add a new lead from Acme Corp for Web Redesign with ₹2,50,000 budget";
     } else if (text === "Draft Quote") {
-        document.getElementById("ai-input").value = "Create a quote for Acme Corp with 2 units of Design Sprint at $2,500 each";
+        document.getElementById("ai-input").value = "Create a quote for Acme Corp with 2 units of Design Sprint at ₹25,000 each";
     } else if (text === "Pipeline Stats") {
         document.getElementById("ai-input").value = "Give me a summary of our active pipeline metrics";
     }

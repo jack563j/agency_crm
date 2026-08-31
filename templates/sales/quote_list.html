@@ -26,7 +26,7 @@
                         <th class="py-3.5 px-6">Quote Title</th>
                         <th class="py-3.5 px-6">Company</th>
                         <th class="py-3.5 px-6">Status</th>
-                        <th class="py-3.5 px-6">Total ($)</th>
+                        <th class="py-3.5 px-6">Total (₹)</th>
                         <th class="py-3.5 px-6">Valid Until</th>
                         <th class="py-3.5 px-6 text-right">Actions</th>
                     </tr>
@@ -45,7 +45,7 @@
                                 {{ quote.get_status_display }}
                             </span>
                         </td>
-                        <td class="py-4 px-6 font-bold text-slate-900">${{ quote.total|floatformat:2 }}</td>
+                        <td class="py-4 px-6 font-bold text-slate-900">₹{{ quote.total|floatformat:2 }}</td>
                         <td class="py-4 px-6 font-medium text-slate-500">{{ quote.valid_until|default:"No expiration" }}</td>
                         <td class="py-4 px-6 text-right space-x-2">
                             {% if quote.status != 'accepted' %}

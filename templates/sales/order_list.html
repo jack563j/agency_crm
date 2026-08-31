@@ -24,7 +24,7 @@
                         <th class="py-3.5 px-6">Order Title</th>
                         <th class="py-3.5 px-6">Company</th>
                         <th class="py-3.5 px-6">Status</th>
-                        <th class="py-3.5 px-6">Total ($)</th>
+                        <th class="py-3.5 px-6">Total (₹)</th>
                         <th class="py-3.5 px-6">Order Date</th>
                         <th class="py-3.5 px-6 text-right">Actions</th>
                     </tr>
@@ -43,7 +43,7 @@
                                 {{ order.get_status_display }}
                             </span>
                         </td>
-                        <td class="py-4 px-6 font-bold text-slate-900">${{ order.total|floatformat:2 }}</td>
+                        <td class="py-4 px-6 font-bold text-slate-900">₹{{ order.total|floatformat:2 }}</td>
                         <td class="py-4 px-6 font-medium text-slate-500">{{ order.ordered_at|default:order.created_at|date:"M d, Y" }}</td>
                         <td class="py-4 px-6 text-right space-x-2">
                             {% if not request.user.groups.first.name == 'Sales Representative' %}

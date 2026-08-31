@@ -17,9 +17,9 @@
                 </span>
             </div>
             <div class="mt-4">
-                <h3 class="text-2xl font-bold text-slate-900">${{ pipeline_value|floatformat:2 }}</h3>
+                <h3 class="text-2xl font-bold text-slate-900">₹{{ pipeline_value|floatformat:2 }}</h3>
                 <p class="text-xs text-slate-500 mt-1">
-                    Weighted: <span class="font-semibold text-emerald-600">${{ weighted_pipeline|floatformat:2 }}</span>
+                    Weighted: <span class="font-semibold text-emerald-600">₹{{ weighted_pipeline|floatformat:2 }}</span>
                 </p>
             </div>
         </div>
@@ -33,7 +33,7 @@
                 </span>
             </div>
             <div class="mt-4">
-                <h3 class="text-2xl font-bold text-slate-900">${{ won_revenue|floatformat:2 }}</h3>
+                <h3 class="text-2xl font-bold text-slate-900">₹{{ won_revenue|floatformat:2 }}</h3>
                 <p class="text-xs text-slate-500 mt-1">
                     Win Rate: <span class="font-semibold text-teal-600">{{ win_rate }}%</span>
                 </p>
@@ -49,9 +49,9 @@
                 </span>
             </div>
             <div class="mt-4">
-                <h3 class="text-2xl font-bold text-slate-900">${{ total_invoiced|floatformat:2 }}</h3>
+                <h3 class="text-2xl font-bold text-slate-900">₹{{ total_invoiced|floatformat:2 }}</h3>
                 <p class="text-xs text-slate-500 mt-1">
-                    Due: <span class="font-semibold text-rose-600">${{ outstanding_balance|floatformat:2 }}</span> 
+                    Due: <span class="font-semibold text-rose-600">₹{{ outstanding_balance|floatformat:2 }}</span> 
                     {% if overdue_invoices_count > 0 %}
                     <span class="text-[10px] bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded font-bold ml-1">({{ overdue_invoices_count }} Overdue)</span>
                     {% endif %}
@@ -176,8 +176,8 @@
                     </div>
                     <div class="flex items-center space-x-3">
                         <div class="text-right">
-                            <p class="text-sm font-bold text-slate-900">${{ inv.subtotal|floatformat:2 }}</p>
-                            <p class="text-[11px] text-slate-400">Due: ${{ inv.balance_due|floatformat:2 }}</p>
+                            <p class="text-sm font-bold text-slate-900">₹{{ inv.subtotal|floatformat:2 }}</p>
+                            <p class="text-[11px] text-slate-400">Due: ₹{{ inv.balance_due|floatformat:2 }}</p>
                         </div>
                         <a href="{% url 'invoice_detail' inv.id %}" target="_blank" class="px-2.5 py-1 bg-teal-600 hover:bg-teal-700 text-white rounded text-xs font-semibold shadow-sm transition">
                             <i class="fa-solid fa-file-pdf mr-1"></i> View
@@ -208,7 +208,7 @@ document.addEventListener("DOMContentLoaded", function() {
         data: {
             labels: stageLabels,
             datasets: [{
-                label: 'Pipeline Value ($)',
+                label: 'Pipeline Value (₹)',
                 data: stageValues,
                 backgroundColor: [
                     'rgba(59, 130, 246, 0.8)',
@@ -231,7 +231,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 y: {
                     beginAtZero: true,
                     ticks: {
-                        callback: function(value) { return '$' + value.toLocaleString(); }
+                        callback: function(value) { return '₹' + value.toLocaleString(); }
                     },
                     grid: { color: '#f1f5f9' }
                 },
