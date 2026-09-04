@@ -87,7 +87,25 @@ def invoice_detail(request, pk):
         .prefetch_related("line_items__product", "payments"),
         pk=pk,
     )
-    return render(request, "invoicing/invoice_detail.html", {"invoice": invoice})
+    # Pre-compute GST breakdown for template (CGST 9% + SGST 9% = 18% total)
+    taxable  = invoice.subtotal                 # amount entered is taxable value (excl. GST)
+    cgst     = round(taxable * Decimal("0.09"), 2)
+    sgst     = round(taxable * Decimal("0.09"), 2)
+    grand_total = taxable + cgst + sgst
+
+    # Rows needed to pad table to at least MIN_ROWS
+    MIN_ROWS = 12
+    item_count  = invoice.line_items.count()
+    empty_count = max(0, MIN_ROWS - item_count)
+
+    return render(request, "invoicing/invoice_detail.html", {
+        "invoice":     invoice,
+        "taxable":     taxable,
+        "cgst":        cgst,
+        "sgst":        sgst,
+        "grand_total": grand_total,
+        "empty_rows":  range(empty_count),
+    })
 
 
 @login_required
@@ -98,4 +116,17 @@ def invoice_print(request, pk):
         .prefetch_related("line_items__product", "payments"),
         pk=pk,
     )
-    return render(request, "invoicing/invoice_print.html", {"invoice": invoice})
+    taxable     = invoice.subtotal
+    cgst        = round(taxable * Decimal("0.09"), 2)
+    sgst        = round(taxable * Decimal("0.09"), 2)
+    grand_total = taxable + cgst + sgst
+    MIN_ROWS    = 12
+    empty_count = max(0, MIN_ROWS - invoice.line_items.count())
+    return render(request, "invoicing/invoice_print.html", {
+        "invoice":     invoice,
+        "taxable":     taxable,
+        "cgst":        cgst,
+        "sgst":        sgst,
+        "grand_total": grand_total,
+        "empty_rows":  range(empty_count),
+    })
