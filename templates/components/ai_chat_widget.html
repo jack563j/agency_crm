@@ -176,6 +176,19 @@ async function submitAIChat(e) {
             },
             body: JSON.stringify({ message: msg })
         });
+
+        // Guard: if server returned non-JSON (HTML error page), surface a clean message
+        const contentType = res.headers.get("content-type") || "";
+        if (!contentType.includes("application/json")) {
+            document.getElementById(typingId)?.remove();
+            const statusMsg = res.status === 401
+                ? "Session expired — please refresh the page and log in again."
+                : `Server error (HTTP ${res.status}). Please try again.`;
+            box.innerHTML += `<div class="text-rose-400 text-xs p-2 bg-rose-500/10 rounded-lg border border-rose-500/20">${statusMsg}</div>`;
+            box.scrollTop = box.scrollHeight;
+            return;
+        }
+
         const data = await res.json();
         document.getElementById(typingId)?.remove();
 
